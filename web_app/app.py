@@ -1,6 +1,6 @@
 """
-Flask web application for C++ Code Analyzer
-This application provides a web interface for analyzing C++ code using the Qwen model
+Flask web application for Code Analyzer
+This application provides a web interface for analyzing code in multiple languages using the Qwen model
 """
 
 import os
@@ -24,22 +24,53 @@ except ImportError:
 
 from datetime import datetime
 
-# Add parent directory to path to import cpp_code_analyzer
+# Add parent directory to path to import code_analyzer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from cpp_code_analyzer import CppCodeAnalyzer, generate_report
+from code_analyzer import CodeAnalyzer, generate_report
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_for_development_only')
-app.config['UPLOAD_FOLDER'] = os.path.join(tempfile.gettempdir(), 'cpp_analyzer_uploads')
+app.config['UPLOAD_FOLDER'] = os.path.join(tempfile.gettempdir(), 'code_analyzer_uploads')
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max upload size
-app.config['ALLOWED_EXTENSIONS'] = {'.cpp', '.cc', '.cxx', '.h', '.hpp'}
+app.config['ALLOWED_EXTENSIONS'] = {
+    # C++
+    '.cpp', '.cc', '.cxx', '.h', '.hpp',
+    # Python
+    '.py',
+    # JavaScript
+    '.js',
+    # HTML/CSS
+    '.html', '.css',
+    # Java
+    '.java',
+    # C#
+    '.cs',
+    # PHP
+    '.php',
+    # Ruby
+    '.rb',
+    # Go
+    '.go',
+    # Rust
+    '.rs',
+    # TypeScript
+    '.ts',
+    # Swift
+    '.swift',
+    # Kotlin
+    '.kt',
+    # Scala
+    '.scala',
+    # C
+    '.c'
+}
 
 # Create upload folder if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Initialize the analyzer
-analyzer = CppCodeAnalyzer()
+analyzer = CodeAnalyzer()
 analyzer.load_model()
 
 def allowed_file(filename):
@@ -94,7 +125,7 @@ def upload_file():
         # Redirect to analysis page
         return redirect(url_for('analyze', file_id=file_id))
 
-    flash('File type not allowed. Please upload a C++ file (.cpp, .cc, .cxx, .h, .hpp)', 'error')
+    flash('File type not allowed. Please upload a supported code file (e.g., .cpp, .py, .js, .java, etc.)', 'error')
     return redirect(url_for('index'))
 
 @app.route('/analyze/<file_id>')

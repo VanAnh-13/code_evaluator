@@ -1,19 +1,20 @@
-# C++ Code Analyzer using Qwen
+# Code Analyzer using Qwen
 
-This tool analyzes C++ code for potential issues, code quality, and security vulnerabilities using the Qwen large language model.
+This tool analyzes code in multiple programming languages for potential issues, code quality, and security vulnerabilities using the Qwen large language model.
 
 ## Features
 
+- Supports multiple programming languages (C++, Python, JavaScript, Java, and more)
 - Detects potential bugs and logical errors
-- Identifies memory management issues (leaks, dangling pointers, etc.)
+- Identifies memory and resource management issues
 - Finds security vulnerabilities
 - Highlights performance issues
 - Suggests code style and readability improvements
-- Generates suggested fixes for identified issues
+- Generates language-specific suggested fixes for identified issues
 - Supports analyzing multiple files
 - Caches analysis results for improved performance
 - Provides detailed reports in both JSON and Markdown formats
-- Web interface for uploading and analyzing C++ files
+- Web interface for uploading and analyzing code files
 - ChatGPT-like UI for viewing analysis results
 
 ## Installation
@@ -36,38 +37,50 @@ pip install -r requirements.txt
 
 ```bash
 # Build the Docker image
-docker build -t cpp-code-analyzer .
+docker build -t code-analyzer .
 
 # Run the analyzer using Docker
-docker run -v $(pwd):/data cpp-code-analyzer /data/your_file.cpp
+docker run -v $(pwd):/data code-analyzer /data/your_file.cpp
+
+# Analyze Python files
+docker run -v $(pwd):/data code-analyzer /data/your_script.py
+
+# Analyze JavaScript files
+docker run -v $(pwd):/data code-analyzer /data/your_script.js
 ```
 
 ## Usage
 
 ```bash
 # Basic usage with a single file
-python cpp_code_analyzer.py path/to/your/file.cpp
+python code_analyzer.py path/to/your/file.cpp
 
-# Analyze multiple files
-python cpp_code_analyzer.py file1.cpp file2.cpp file3.cpp
+# Analyze Python files
+python code_analyzer.py path/to/your/script.py
+
+# Analyze JavaScript files
+python code_analyzer.py path/to/your/script.js
+
+# Analyze multiple files of different languages
+python code_analyzer.py file1.cpp file2.py file3.js
 
 # Save results to a directory (creates JSON files for each analyzed file)
-python cpp_code_analyzer.py path/to/your/file.cpp --output results_dir
+python code_analyzer.py path/to/your/file.cpp --output results_dir
 
 # Save human-readable reports to a directory
-python cpp_code_analyzer.py path/to/your/file.cpp --report reports_dir
+python code_analyzer.py path/to/your/file.py --report reports_dir
 
 # Generate suggested fixes for identified issues
-python cpp_code_analyzer.py path/to/your/file.cpp --fix
+python code_analyzer.py path/to/your/file.js --fix
 
 # Disable caching of analysis results
-python cpp_code_analyzer.py path/to/your/file.cpp --no-cache
+python code_analyzer.py path/to/your/file.cpp --no-cache
 
 # Enable verbose output
-python cpp_code_analyzer.py path/to/your/file.cpp --verbose
+python code_analyzer.py path/to/your/file.py --verbose
 
 # Specify a different Qwen model
-python cpp_code_analyzer.py path/to/your/file.cpp --model Qwen/Qwen-14B-Chat
+python code_analyzer.py path/to/your/file.js --model Qwen/Qwen-14B-Chat
 ```
 
 ## Requirements
@@ -85,9 +98,18 @@ python cpp_code_analyzer.py path/to/your/file.cpp --model Qwen/Qwen-14B-Chat
 - flask-wtf==1.2.1
 - wtforms==3.0.1
 - python-dotenv==1.0.0
-- g++ (for syntax checking, only required for certain features)
 
-## Example
+### Language-Specific Requirements
+
+- g++ (for C++ syntax checking)
+- pylint (for Python syntax checking)
+- node.js and eslint (for JavaScript syntax checking, optional)
+- javac (for Java syntax checking, optional)
+- dotnet (for C# syntax checking, optional)
+
+## Examples
+
+### C++ Example
 
 Input C++ file (`example.cpp`):
 
@@ -121,8 +143,9 @@ int main() {
 Output report:
 
 ```
-# C++ Code Analysis Report
+# Code Analysis Report
 File: example.cpp
+Language: cpp
 
 Total issues found: 5
 
@@ -147,9 +170,72 @@ Total issues found: 5
   Recommendation: Follow a consistent naming style (e.g., camelCase or snake_case)
 ```
 
+### Python Example
+
+Input Python file (`example.py`):
+
+```python
+def calculate_average(numbers):
+    total = 0
+    count = 0
+
+    for num in numbers:
+        total += num
+        count += 1
+
+    # Potential division by zero if numbers is empty
+    return total / count
+
+def main():
+    # Undefined variable used
+    print(user_input)
+
+    # Inefficient list creation
+    result = []
+    for i in range(1000):
+        result.append(i * i)
+
+    # Resource not properly closed
+    f = open("data.txt", "r")
+    content = f.read()
+    print(content)
+
+    # Calculating average of empty list will cause error
+    print(calculate_average([]))
+
+if __name__ == "__main__":
+    main()
+```
+
+Output report:
+
+```
+# Code Analysis Report
+File: example.py
+Language: python
+
+Total issues found: 4
+
+## Syntax Errors (1)
+- Line 13 (high): Syntax issue: Undefined variable 'user_input'
+  Recommendation: Define variable 'user_input' before using it
+
+## Bugs and Logical Errors (1)
+- Line 9 (high): Potential division by zero error
+  Recommendation: Add a check to ensure count is not zero before division
+
+## Resource Management Issues (1)
+- Line 21 (medium): File resource not properly closed
+  Recommendation: Use 'with open()' statement or call f.close()
+
+## Performance Issues (1)
+- Line 16 (low): Inefficient list creation
+  Recommendation: Use list comprehension: result = [i * i for i in range(1000)]
+```
+
 ## Full Implementation
 
-The full implementation uses the Qwen model to analyze C++ code. It loads the model using the transformers library and generates detailed analysis based on the code content.
+The full implementation uses the Qwen model to analyze code in multiple programming languages. It loads the model using the transformers library and generates detailed analysis based on the code content. The analyzer automatically detects the programming language based on the file extension and applies language-specific analysis techniques.
 
 ## Optimizations
 
@@ -171,7 +257,7 @@ This tool has been optimized for performance and efficiency:
 
 ## Web Interface
 
-The C++ Code Analyzer includes a web interface with a ChatGPT-like UI for uploading and analyzing C++ files.
+The Code Analyzer includes a web interface with a ChatGPT-like UI for uploading and analyzing code files in multiple programming languages.
 
 ### Running the Web Server
 
@@ -221,7 +307,7 @@ python3 install_dependencies.py
 ### Using the Web Interface
 
 1. Open your browser and navigate to http://localhost:5000
-2. Click the "Choose a C++ file" button to select a C++ file from your computer
+2. Click the "Choose a code file" button to select a code file from your computer (supports C++, Python, JavaScript, Java, and more)
 3. Click "Analyze" to upload and analyze the file
 4. View the analysis results in the ChatGPT-like interface
 5. Access your analysis history from the sidebar
@@ -232,10 +318,10 @@ You can also run the web interface using Docker:
 
 ```bash
 # Build the Docker image
-docker build -t cpp-code-analyzer-web .
+docker build -t code-analyzer-web .
 
 # Run the container
-docker run -p 5000:5000 cpp-code-analyzer-web
+docker run -p 5000:5000 code-analyzer-web
 ```
 
 Then access the web interface at http://localhost:5000.
@@ -349,11 +435,24 @@ If you still encounter authentication issues, you can:
 
 #### Syntax Checking Errors
 
-If you encounter errors related to syntax checking, ensure g++ is installed and in your PATH:
+If you encounter errors related to syntax checking, ensure the appropriate tools are installed for the languages you want to analyze:
 
-- **Windows**: Install MinGW or MSYS2 to get g++
-- **Linux**: `sudo apt-get install g++`
-- **Mac**: Install Xcode command line tools
+- **C++**: 
+  - **Windows**: Install MinGW or MSYS2 to get g++
+  - **Linux**: `sudo apt-get install g++`
+  - **Mac**: Install Xcode command line tools
+
+- **Python**:
+  - Install pylint: `pip install pylint`
+
+- **JavaScript**:
+  - Install Node.js and ESLint: `npm install -g eslint`
+
+- **Java**:
+  - Install JDK which includes javac
+
+- **C#**:
+  - Install .NET SDK which includes the C# compiler
 
 ## License
 

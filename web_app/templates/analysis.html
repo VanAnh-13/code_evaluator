@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}C++ Code Analysis Results{% endblock %}
+{% block title %}Code Analysis Results{% endblock %}
 
 {% block content %}
 <div class="chat-container">
@@ -8,14 +8,14 @@
         <h2>Analysis Results</h2>
         <p>File: {{ file_info.original_name }}</p>
     </div>
-    
+
     <div class="chat-messages">
         <div class="message user">
             <div class="message-content">
                 <p>Analyze file: {{ file_info.original_name }}</p>
             </div>
         </div>
-        
+
         <div class="message system">
             <div class="message-content markdown-content">
                 {% if "error" in results %}
@@ -33,7 +33,7 @@
                         (results.performance_issues|length if results.performance_issues else 0) +
                         (results.style_issues|length if results.style_issues else 0)
                     }}</p>
-                    
+
                     <h3>Syntax Errors ({{ results.syntax_errors|length if results.syntax_errors else 0 }})</h3>
                     {% if results.syntax_errors %}
                         <ul class="issue-list">
@@ -53,7 +53,7 @@
                     {% else %}
                         <p>No syntax errors found.</p>
                     {% endif %}
-                    
+
                     <h3>Bugs and Logical Errors ({{ results.bugs|length if results.bugs else 0 }})</h3>
                     {% if results.bugs %}
                         <ul class="issue-list">
@@ -73,7 +73,7 @@
                     {% else %}
                         <p>No bugs or logical errors found.</p>
                     {% endif %}
-                    
+
                     <h3>Memory Management Issues ({{ results.memory_issues|length if results.memory_issues else 0 }})</h3>
                     {% if results.memory_issues %}
                         <ul class="issue-list">
@@ -93,7 +93,7 @@
                     {% else %}
                         <p>No memory management issues found.</p>
                     {% endif %}
-                    
+
                     <h3>Security Vulnerabilities ({{ results.security_vulnerabilities|length if results.security_vulnerabilities else 0 }})</h3>
                     {% if results.security_vulnerabilities %}
                         <ul class="issue-list">
@@ -113,7 +113,7 @@
                     {% else %}
                         <p>No security vulnerabilities found.</p>
                     {% endif %}
-                    
+
                     <h3>Performance Issues ({{ results.performance_issues|length if results.performance_issues else 0 }})</h3>
                     {% if results.performance_issues %}
                         <ul class="issue-list">
@@ -133,7 +133,7 @@
                     {% else %}
                         <p>No performance issues found.</p>
                     {% endif %}
-                    
+
                     <h3>Code Style and Readability ({{ results.style_issues|length if results.style_issues else 0 }})</h3>
                     {% if results.style_issues %}
                         <ul class="issue-list">
@@ -153,7 +153,7 @@
                     {% else %}
                         <p>No code style issues found.</p>
                     {% endif %}
-                    
+
                     {% if results.suggested_fixes %}
                         <h3>Suggested Fixes</h3>
                         {% for line_num, fix in results.suggested_fixes.items() %}
@@ -167,7 +167,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="chat-input">
         <a href="{{ url_for('index') }}" class="new-analysis-button">
             <i class="fas fa-plus"></i> New Analysis

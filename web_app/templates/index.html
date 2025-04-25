@@ -1,37 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}C++ Code Analyzer - Upload{% endblock %}
+{% block title %}Code Analyzer - Upload{% endblock %}
 
 {% block content %}
 <div class="chat-container">
     <div class="chat-header">
-        <h2>C++ Code Analyzer</h2>
-        <p>Upload your C++ file for AI-powered code analysis and improvement recommendations</p>
+        <h2>Code Analyzer</h2>
+        <p>Upload your code file for AI-powered analysis and improvement recommendations</p>
     </div>
-    
+
     <div class="chat-messages">
         <div class="message system">
             <div class="message-content">
-                <p>Welcome to the C++ Code Analyzer! I can help you analyze your C++ code for:</p>
+                <p>Welcome to the Code Analyzer! I can help you analyze your code for:</p>
                 <ul>
                     <li>Potential bugs and logical errors</li>
-                    <li>Memory management issues</li>
+                    <li>Memory and resource management issues</li>
                     <li>Security vulnerabilities</li>
                     <li>Performance issues</li>
                     <li>Code style and readability</li>
                 </ul>
-                <p>Upload a C++ file (.cpp, .cc, .cxx, .h, .hpp) to get started.</p>
+                <p>Upload a code file (e.g., .cpp, .py, .js, .java, etc.) to get started.</p>
             </div>
         </div>
     </div>
-    
+
     <div class="chat-input">
         <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="upload-form">
             <div class="file-input-container">
-                <input type="file" name="file" id="file-input" class="file-input" accept=".cpp,.cc,.cxx,.h,.hpp">
+                <input type="file" name="file" id="file-input" class="file-input" accept=".cpp,.cc,.cxx,.h,.hpp,.py,.js,.html,.css,.java,.c,.cs,.php,.rb,.go,.rs,.ts,.swift,.kt,.scala">
                 <label for="file-input" class="file-input-label">
                     <i class="fas fa-upload"></i>
-                    <span id="file-name">Choose a C++ file</span>
+                    <span id="file-name">Choose a code file</span>
                 </label>
             </div>
             <button type="submit" class="submit-button">
@@ -47,7 +47,7 @@
 <script>
     // Update file name when file is selected
     document.getElementById('file-input').addEventListener('change', function() {
-        const fileName = this.files[0] ? this.files[0].name : 'Choose a C++ file';
+        const fileName = this.files[0] ? this.files[0].name : 'Choose a code file';
         document.getElementById('file-name').textContent = fileName;
     });
 </script>

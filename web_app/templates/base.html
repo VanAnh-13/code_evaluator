@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}C++ Code Analyzer{% endblock %}</title>
+    <title>{% block title %}Code Analyzer{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +15,7 @@
     <div class="app-container">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h1>C++ Analyzer</h1>
+                <h1>Code Analyzer</h1>
             </div>
             <div class="sidebar-content">
                 <a href="{{ url_for('index') }}" class="sidebar-button">
@@ -33,7 +33,7 @@
                 </form>
             </div>
         </aside>
-        
+
         <main class="main-content">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -47,11 +47,11 @@
                     </div>
                 {% endif %}
             {% endwith %}
-            
+
             {% block content %}{% endblock %}
         </main>
     </div>
-    
+
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_scripts %}{% endblock %}
 </body>
