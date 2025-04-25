@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}C++ Code Analyzer{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>C++ Analyzer</h1>
+            </div>
+            <div class="sidebar-content">
+                <a href="{{ url_for('index') }}" class="sidebar-button">
+                    <i class="fas fa-plus"></i> New Analysis
+                </a>
+                <a href="{{ url_for('history') }}" class="sidebar-button">
+                    <i class="fas fa-history"></i> History
+                </a>
+            </div>
+            <div class="sidebar-footer">
+                <form action="{{ url_for('clear_history') }}" method="post" onsubmit="return confirm('Are you sure you want to clear your history?');">
+                    <button type="submit" class="sidebar-button text-danger">
+                        <i class="fas fa-trash"></i> Clear History
+                    </button>
+                </form>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                {{ message }}
+                                <button class="close-button" onclick="this.parentElement.style.display='none';">&times;</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

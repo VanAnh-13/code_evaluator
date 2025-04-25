@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}C++ Code Analyzer - History{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <h2>Analysis History</h2>
+        <p>Your previously analyzed C++ files</p>
+    </div>
+    
+    <div class="history-container">
+        {% if files %}
+            <ul class="history-list">
+                {% for file in files|sort(attribute='timestamp', reverse=True) %}
+                    <li class="history-item">
+                        <div class="history-item-header">
+                            <span class="history-item-name">{{ file.original_name }}</span>
+                            <span class="history-item-date">{{ file.timestamp|replace('T', ' ')|truncate(19, True, '') }}</span>
+                        </div>
+                        <div class="history-item-actions">
+                            <a href="{{ url_for('analyze', file_id=file.id) }}" class="history-item-button">
+                                <i class="fas fa-eye"></i> View Analysis
+                            </a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="empty-history">
+                <i class="fas fa-history fa-4x"></i>
+                <p>No analysis history found</p>
+                <a href="{{ url_for('index') }}" class="new-analysis-button">
+                    <i class="fas fa-plus"></i> New Analysis
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
