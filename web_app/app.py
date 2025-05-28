@@ -7,7 +7,6 @@ import os
 import sys
 import uuid
 import tempfile
-import importlib.util
 
 # Check if Flask is installed
 try:
@@ -34,44 +33,65 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_for_development
 app.config['UPLOAD_FOLDER'] = os.path.join(tempfile.gettempdir(), 'code_analyzer_uploads')
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max upload size
 app.config['ALLOWED_EXTENSIONS'] = {
-    # C++
     '.cpp', '.cc', '.cxx', '.h', '.hpp',
-    # Python
     '.py',
-    # JavaScript
     '.js',
-    # HTML/CSS
     '.html', '.css',
-    # Java
     '.java',
-    # C#
     '.cs',
-    # PHP
     '.php',
-    # Ruby
     '.rb',
-    # Go
     '.go',
-    # Rust
     '.rs',
-    # TypeScript
     '.ts',
-    # Swift
     '.swift',
-    # Kotlin
     '.kt',
-    # Scala
     '.scala',
-    # C
     '.c'
 }
 
 # Create upload folder if it doesn't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Initialize the analyzer
-analyzer = CodeAnalyzer()
-analyzer.load_model()
+# Set Ollama host - use local host (default) or specify a remote host if needed
+os.environ['OLLAMA_HOST'] = "https://f6bf-34-69-56-104.ngrok-free.app"  # Default Ollama API endpoint
+
+# Initialize analyzer with a more widely available model
+try:
+    # Initialize analyzer with a common Ollama model
+    print("[INFO] Initializing code analyzer...")
+    
+    # Try different model names in order of preference
+    model_names = ["qwen2:7b", "qwen2:1.5b", "qwen:7b", "qwen:1.8b", "llama2:7b"]
+    analyzer = None
+    
+    for model_name in model_names:
+        try:
+            print(f"[INFO] Trying to initialize with model: {model_name}")
+            analyzer = CodeAnalyzer(model_name=model_name)
+            
+            # Test if the model works
+            if analyzer.load_model():
+                print(f"[INFO] Successfully initialized with model: {model_name}")
+                break
+            else:
+                print(f"[WARNING] Failed to load model: {model_name}")
+        except Exception as e:
+            print(f"[WARNING] Error with model {model_name}: {str(e)}")
+            continue
+    
+    if analyzer is None:
+        # Fallback to basic analyzer without AI model
+        print("[WARNING] Could not initialize any AI model. Using basic syntax-only analysis.")
+        analyzer = CodeAnalyzer(model_name="none")
+    
+except ImportError:
+    print("[ERROR] Ollama Python package not installed.")
+    print("[INFO] Installing Ollama package...")
+    os.system("pip install ollama")
+    print("[INFO] Please restart the application after installation completes.")
+    # Initialize with fallback
+    analyzer = CodeAnalyzer(model_name="none")
 
 def allowed_file(filename):
     """Check if the file has an allowed extension"""
@@ -144,6 +164,13 @@ def analyze(file_id):
     # Analyze the file
     results = analyzer.analyze_file(file_info['path'])
 
+    # Load file content for line display
+    try:
+        with open(file_info['path'], 'r', encoding='utf-8', errors='replace') as f:
+            file_lines = f.readlines()
+    except Exception:
+        file_lines = []
+
     # Generate report
     report = generate_report(results)
 
@@ -154,7 +181,8 @@ def analyze(file_id):
     return render_template('analysis.html', 
                           file_info=file_info, 
                           results=results, 
-                          report=report)
+                          report=report,
+                          file_lines=file_lines)
 
 @app.route('/history')
 def history():

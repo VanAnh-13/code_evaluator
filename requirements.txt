@@ -1,20 +1,17 @@
 --index-url https://pypi.org/simple
---extra-index-url https://download.pytorch.org/whl/torch_stable.html
-transformers==4.38.2
---find-links https://download.pytorch.org/whl/torch_stable.html
-torch==2.2.2
---find-links https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
---extra-index-url https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
-modelscope==1.9.5
---find-links https://download.pytorch.org/whl/torch_stable.html
---extra-index-url https://download.pytorch.org/whl/torch_stable.html
-sentencepiece==0.1.99
+ollama==0.1.26
 colorama==0.4.6
 tqdm==4.66.1
---find-links https://download.pytorch.org/whl/torch_stable.html
-numpy==1.24.4
+numpy>=1.26.0
 flask==2.3.3
 werkzeug==2.3.7
 flask-wtf==1.2.1
 wtforms==3.0.1
 python-dotenv==1.0.0
+# Fine-tuning dependencies
+peft==0.7.1
+datasets==2.13.0
+tiktoken>=0.5.1
+accelerate==0.25.0
+bitsandbytes==0.41.1
+scipy>=1.15.2

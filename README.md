@@ -51,6 +51,8 @@ docker run -v $(pwd):/data code-analyzer /data/your_script.js
 
 ## Usage
 
+### Code Analysis
+
 ```bash
 # Basic usage with a single file
 python code_analyzer.py path/to/your/file.cpp
@@ -83,6 +85,63 @@ python code_analyzer.py path/to/your/file.py --verbose
 python code_analyzer.py path/to/your/file.js --model Qwen/Qwen-14B-Chat
 ```
 
+### Fine-tuning
+
+The Code Analyzer supports fine-tuning the Qwen model on custom code analysis datasets to improve its performance for specific languages or domains.
+
+#### Dataset Format
+
+The fine-tuning dataset should be a JSON file with the following structure:
+
+```json
+[
+  {
+    "language": "cpp",
+    "code": "// Your C++ code here",
+    "analysis": "Detailed analysis of the code with issues and recommendations"
+  },
+  {
+    "language": "python",
+    "code": "# Your Python code here",
+    "analysis": "Detailed analysis of the code with issues and recommendations"
+  }
+]
+```
+
+#### Fine-tuning Commands
+
+```bash
+# Create a sample dataset for testing
+python finetune.py --create_sample --sample_path my_dataset.json --num_samples 20
+
+# Fine-tune the model using the sample dataset
+python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model
+
+# Use LoRA for parameter-efficient fine-tuning (recommended for large models)
+python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model --use_lora
+
+# Fine-tune with 8-bit quantization to reduce memory usage
+python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model --use_lora --load_in_8bit
+
+# Fine-tune with custom hyperparameters
+python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model \
+  --use_lora --lora_r 16 --lora_alpha 32 --learning_rate 1e-5 \
+  --num_train_epochs 5 --per_device_train_batch_size 2 \
+  --gradient_accumulation_steps 8 --fp16
+
+# Fine-tune a different Qwen model
+python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model \
+  --model_name Qwen/Qwen-14B-Chat --use_lora
+```
+
+#### Using a Fine-tuned Model
+
+After fine-tuning, you can use the fine-tuned model for code analysis:
+
+```bash
+python code_analyzer.py path/to/your/file.cpp --model fine-tuned-model
+```
+
 ## Requirements
 
 - Python 3.8+
@@ -98,6 +157,16 @@ python code_analyzer.py path/to/your/file.js --model Qwen/Qwen-14B-Chat
 - flask-wtf==1.2.1
 - wtforms==3.0.1
 - python-dotenv==1.0.0
+
+### Fine-tuning Requirements
+
+Additional dependencies for fine-tuning:
+
+- peft==0.7.1 (Parameter-Efficient Fine-Tuning)
+- datasets==2.16.1 (Hugging Face Datasets)
+- accelerate==0.25.0 (Distributed training support)
+- bitsandbytes==0.41.1 (Quantization support)
+- scipy==1.11.4 (Required by some fine-tuning libraries)
 
 ### Language-Specific Requirements
 

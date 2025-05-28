@@ -11,7 +11,7 @@ import tempfile
 
 def check_dependencies():
     """Check if required dependencies are installed"""
-    required_packages = ['flask', 'werkzeug']
+    required_packages = ['flask', 'werkzeug', 'ollama']
     missing_packages = []
 
     for package in required_packages:
@@ -39,6 +39,17 @@ def check_environment():
         os.remove(test_file)
     except Exception as e:
         issues.append(f"Cannot write to temporary directory: {str(e)}")
+    
+    # Check if Ollama server is running
+    try:
+        import ollama
+        try:
+            ollama.list()
+        except Exception as e:
+            issues.append(f"Ollama server is not running or accessible: {str(e)}. " 
+                         f"Please install and run Ollama from https://ollama.com/download")
+    except ImportError:
+        pass  # Already checked in check_dependencies()
 
     return issues
 

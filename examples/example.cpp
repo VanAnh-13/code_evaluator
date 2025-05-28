@@ -1,33 +1,87 @@
-#include <iostream>
-using namespace std;
+// example.cpp - File intentionally filled with logic and syntax errors for demonstration
 
-// Hàm tính tổng hai số nguyên
-int addNumbers(int a, b) { // Lỗi: Thiếu kiểu dữ liệu cho tham số `b`
-    return a + b;
-}
+#include <iostream> // Missing some includes
+#include <vector>
+#include <string>
+using namespace std // ERROR: Missing semicolon
 
-int main() {
-    int x = 10;
-    int y = "20"; // Lỗi: Gán chuỗi vào biến kiểu số nguyên
-
-    cout << "Tổng của x và y là: " << addNumbers(x, y) << endl;
-
-    char name[5]; // Mảng chỉ có thể chứa 5 ký tự
-    cout << "Nhập tên của bạn: ";
-    cin >> name; // Lỗi tiềm ẩn: Nếu người dùng nhập quá 5 ký tự, sẽ gây tràn bộ nhớ
-
-    if (x = 20) { // Lỗi logic: Sử dụng toán tử gán (=) thay vì so sánh (==)
-        cout << "x bằng 20" << endl;
-    } else {
-        cout << "x không bằng 20" << endl;
+// ERROR: Class definition missing semicolon at end
+class Student {
+public:
+    string name;
+    int age;
+    Student(string n, int a) : name(n), age(a) // ERROR: Missing braces
+    void print() {
+        cout << "Name: " << name << ", Age: " << age << endl // ERROR: Missing semicolon
     }
+} // ERROR: Missing semicolon
 
-    for (int i = 0; i <= 10; i++) { // Lỗi logic: Điều kiện nên là `i < 10` nếu muốn lặp 10 lần
-        cout << "Giá trị của i: " << i << endl;
+// ERROR: Function with no return type
+main() {
+    vector<Student> students;
+    students.push_back(Student("Alice", 20));
+    students.push_back(Student("Bob", 21));
+    students.push_back(Student("Charlie", 19));
+    for (int i = 0; i <= students.size(); i++) { // ERROR: Out of bounds (should be <)
+        students[i].print();
     }
-
-    int* ptr = nullptr;
-    cout << "Giá trị tại con trỏ: " << *ptr << endl; // Lỗi thời gian chạy: Truy cập vào con trỏ null
-
     return 0;
 }
+
+// ERROR: Unused variable
+int unusedVar = "string"; // ERROR: Type mismatch
+
+// ERROR: Function never called
+void doNothing(int x) {
+    x = x / 0; // ERROR: Division by zero
+}
+
+// ERROR: Infinite recursion
+void infinite() {
+    infinite();
+}
+
+// ERROR: Function with no parameters but called with arguments
+void printHello() {
+    cout << "Hello" << endl;
+}
+void callPrintHello() {
+    printHello(123); // ERROR: Too many arguments
+}
+
+// ERROR: Using undeclared variable
+void useUndeclared() {
+    cout << undeclaredVar << endl;
+}
+
+// ERROR: Array out of bounds
+void arrayError() {
+    int arr[5];
+    arr[10] = 100; // ERROR: Out of bounds
+}
+
+// ERROR: Mismatched brackets
+void bracketError() {
+    if (true) {
+        cout << "Missing closing bracket";
+    // ERROR: Missing closing bracket
+}
+
+// ERROR: Using wrong type in condition
+void typeError() {
+    int x = 5;
+    if ("string") { // ERROR: Condition should be bool/int
+        cout << "Wrong type in if" << endl;
+    }
+}
+
+// ERROR: Assignment in if condition
+void assignmentError() {
+    int x = 0;
+    if (x = 5) { // ERROR: Should be ==
+        cout << "Assignment in if" << endl;
+    }
+}
+
+// ERROR: Function declared but not defined
+void notDefined(int x);

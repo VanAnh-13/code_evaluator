@@ -1,5 +1,5 @@
 """
-Script to install required dependencies for the C++ Code Analyzer web application
+Script to install required dependencies for the Code Analyzer web application with Ollama support
 """
 
 import subprocess
@@ -236,16 +236,25 @@ if __name__ == "__main__":
     success = install_dependencies()
     if success:
         print("\nYou can now run the web application using:")
-        print("python run_web.py")
-
-        # Verify imports
-        print("\nVerifying package imports...")
+        print("python run_web.py")        # Verify Ollama imports
+        print("\nVerifying Ollama package...")
         try:
-            subprocess.check_call([sys.executable, 'test_imports.py'])
-            print("All packages imported successfully!")
-        except subprocess.CalledProcessError:
-            print("Some packages could not be imported. The installation may be incomplete.")
-            print("Please check the error messages above and install any missing dependencies.")
+            import ollama
+            print("Ollama package imported successfully!")
+            
+            # Check if Ollama server is accessible
+            try:
+                ollama.list()
+                print("[SUCCESS] Ollama server is running and accessible.")
+            except Exception as e:
+                print(f"[WARNING] Ollama server may not be running or accessible: {str(e)}")
+                print("You need to install and run the Ollama server separately. Visit https://ollama.com/download")
+                print("After installing Ollama, run the following command in a separate terminal:")
+                print("ollama serve")
+                
+        except ImportError:
+            print("Ollama package could not be imported. The installation may be incomplete.")
+            print("Please ensure you've installed the Ollama package: pip install ollama")
     else:
         print("\nFailed to install all dependencies. Please try installing them manually:")
         print("pip install -r requirements.txt")

@@ -10,6 +10,7 @@ import json
 import subprocess
 import tempfile
 import re
+import torch
 from typing import Dict, List, Any, Optional, Tuple
 
 
@@ -245,11 +246,12 @@ def check_syntax(code: str) -> List[Dict[str, Any]]:
 
         # Parse compiler errors
         if result.returncode != 0:
-            error_pattern = re.compile(r'([^:]+):(\d+):(\d+):\s+(warning|error):\s+(.+)')
+            # Updated regex pattern to handle Windows paths with drive letters (C:\path\file.cpp)
+            error_pattern = re.compile(r'(.+?):(\d+):(\d+):\s+(warning|error):\s+(.+)')
             for line in result.stderr.splitlines():
                 match = error_pattern.match(line)
                 if match:
-                    _, line_num, column, error_type, message = match.groups()
+                    file_path, line_num, column, error_type, message = match.groups()
                     severity = "high" if error_type == "error" else "medium"
                     syntax_errors.append({
                         "line": int(line_num),
@@ -285,7 +287,7 @@ class CppCodeAnalyzer:
     A class to analyze C++ code using the Qwen model
     """
 
-    def __init__(self, model_name: str = "Qwen/Qwen-7B-Chat"):
+    def __init__(self, model_name: str):
         """
         Initialize the analyzer with the specified model
 
@@ -297,17 +299,23 @@ class CppCodeAnalyzer:
         self.tokenizer = None
         self._cache = {}  # Cache for analyzed files
         self.prompt_template = """
-        You are an expert C++ code analyzer. Analyze the following C++ code for:
+        You are an expert code analyzer. Analyze the following code for:
         1. Potential bugs and logical errors
         2. Memory management issues (leaks, dangling pointers, etc.)
         3. Security vulnerabilities
         4. Performance issues
         5. Code style and readability issues
 
-        Provide a detailed analysis with specific line numbers and recommendations for improvement.
+        For each issue you find, you MUST provide:
+        - The specific line number (as 'Line <number>') where the issue occurs
+        - The severity (critical, high, medium, low, info)
+        - A clear description of the issue
+        - A recommendation for fixing it
 
-        C++ CODE:
-        ```cpp
+        Format your analysis as a list, grouping by issue type, and always include the line number for every issue.
+
+        CODE:
+        ```
         {code}
         ```
 
@@ -316,20 +324,69 @@ class CppCodeAnalyzer:
 
     def load_model(self):
         """
-        Load the Qwen model (placeholder for actual implementation)
+        Load the Qwen model or a fine-tuned model
 
-        Note: This would be implemented with transformers or modelscope in the full version
+        Returns:
+            Tuple of (model, tokenizer) if successful, None otherwise
         """
         print(f"[INFO] Loading model: {self.model_name}")
-        # In the full implementation, this would load the model using:
-        # from transformers import AutoModelForCausalLM, AutoTokenizer
-        # tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        # model = AutoModelForCausalLM.from_pretrained(self.model_name)
-        # return model, tokenizer
+        try:
+            # Import required libraries
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+            import torch
+
+            # Check if CUDA is available
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            print(f"[INFO] Using device: {device}")
+
+            # Load tokenizer
+            print(f"[INFO] Loading tokenizer...")
+            tokenizer = AutoTokenizer.from_pretrained(
+                self.model_name,
+                trust_remote_code=True
+            )
+
+            # Add padding token if not present
+            if tokenizer.pad_token is None:
+                tokenizer.pad_token = tokenizer.eos_token
+
+            # Load model
+            print(f"[INFO] Loading model...")
+            model = AutoModelForCausalLM.from_pretrained(
+                self.model_name,
+                torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                trust_remote_code=True,
+                device_map="auto" if torch.cuda.is_available() else None
+            )
+
+            # Check if this is a PEFT (LoRA) fine-tuned model
+            if os.path.isdir(self.model_name) and any(file.endswith("adapter_config.json") for file in os.listdir(self.model_name) if os.path.isfile(os.path.join(self.model_name, file))):
+                print(f"[INFO] Detected PEFT/LoRA fine-tuned model")
+                try:
+                    from peft import PeftModel
+                    model = PeftModel.from_pretrained(model, self.model_name)
+                    print(f"[INFO] Successfully loaded PEFT/LoRA adapters")
+                except ImportError:
+                    print(f"[WARNING] PEFT library not found. Please install it to use LoRA fine-tuned models.")
+                except Exception as e:
+                    print(f"[WARNING] Failed to load PEFT/LoRA adapters: {str(e)}")
+
+            self.model = model
+            self.tokenizer = tokenizer
+            return model, tokenizer
+
+        except ImportError as e:
+            print(f"[ERROR] Required libraries not found: {str(e)}")
+            print("[INFO] Please install the required dependencies:")
+            print("pip install transformers torch")
+            return None
+        except Exception as e:
+            print(f"[ERROR] Failed to load model: {str(e)}")
+            return None
 
     def analyze_code(self, code: str) -> Dict[str, Any]:
         """
-        Analyze the given C++ code
+        Analyze the given C++ code using the loaded model
 
         Args:
             code: C++ code to analyze
@@ -343,37 +400,236 @@ class CppCodeAnalyzer:
         # Prepare the prompt
         formatted_prompt = self.prompt_template.format(code=code)
 
-        # In the full implementation, this would:
-        # 1. Tokenize the prompt
-        # 2. Generate a response using the model
-        # 3. Parse the response into structured analysis
-
-        # For this placeholder, we'll return a sample analysis
+        # Initialize results structure
         analysis_results = {
             "syntax_errors": syntax_errors,
-            "bugs": [
-                {"line": 15, "severity": "high", "description": "Potential null pointer dereference",
-                 "recommendation": "Add null check before dereferencing pointer"}
-            ],
-            "memory_issues": [
-                {"line": 23, "severity": "critical", "description": "Memory leak: allocated memory not freed",
-                 "recommendation": "Add delete[] or use smart pointers"}
-            ],
-            "security_vulnerabilities": [
-                {"line": 42, "severity": "medium", "description": "Buffer overflow risk in strcpy",
-                 "recommendation": "Use strncpy or std::string instead"}
-            ],
-            "performance_issues": [
-                {"line": 57, "severity": "low", "description": "Inefficient loop implementation",
-                 "recommendation": "Consider using std::transform or range-based for loop"}
-            ],
-            "style_issues": [
-                {"line": 10, "severity": "info", "description": "Inconsistent naming convention",
-                 "recommendation": "Follow a consistent naming style (e.g., camelCase or snake_case)"}
-            ]
+            "bugs": [],
+            "memory_issues": [],
+            "security_vulnerabilities": [],
+            "performance_issues": [],
+            "style_issues": []
         }
 
+        # Check if model is loaded
+        if self.model is None or self.tokenizer is None:
+            print("[WARNING] Model not loaded. Loading model now...")
+            model_loaded = self.load_model()
+            if not model_loaded:
+                print("[ERROR] Failed to load model. Returning only syntax analysis.")
+                return analysis_results
+
+        try:
+            # Generate analysis using the model
+            print("[INFO] Generating analysis...")
+
+            # Tokenize the prompt
+            inputs = self.tokenizer(formatted_prompt, return_tensors="pt")
+
+            # Move inputs to the same device as the model
+            device = next(self.model.parameters()).device
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+
+            # Generate response
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_new_tokens=1024,
+                    do_sample=True,
+                    temperature=0.7,
+                    top_p=0.9,
+                    pad_token_id=self.tokenizer.pad_token_id
+                )
+
+            # Decode the response
+            response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+            # Extract the analysis part (after "ANALYSIS:")
+            analysis_text = response.split("ANALYSIS:")[-1].strip()
+
+            # Parse the analysis into structured results
+            parsed_results = self._parse_analysis(analysis_text)
+
+            # Update the results with the parsed analysis
+            for key in ["bugs", "memory_issues", "security_vulnerabilities", "performance_issues", "style_issues"]:
+                if key in parsed_results and parsed_results[key]:
+                    analysis_results[key] = parsed_results[key]
+
+            print(f"[INFO] Analysis completed. Found {sum(len(analysis_results[k]) for k in ['bugs', 'memory_issues', 'security_vulnerabilities', 'performance_issues', 'style_issues'])} issues.")
+
+        except Exception as e:
+            print(f"[ERROR] Failed to generate analysis: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+
         return analysis_results
+
+    def _parse_analysis(self, analysis_text: str) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Parse the model's text output into structured analysis results
+
+        Args:
+            analysis_text: Text output from the model
+
+        Returns:
+            Dictionary containing parsed analysis results
+        """
+        results = {
+            "bugs": [],
+            "memory_issues": [],
+            "security_vulnerabilities": [],
+            "performance_issues": [],
+            "style_issues": []
+        }
+
+        try:
+            # Split the analysis into lines
+            lines = analysis_text.split('\n')
+
+            current_section = None
+            issue_buffer = {}
+
+            # Map section titles to result keys
+            section_mapping = {
+                "bugs": "bugs",
+                "logical errors": "bugs",
+                "memory": "memory_issues",
+                "memory management": "memory_issues",
+                "security": "security_vulnerabilities",
+                "performance": "performance_issues",
+                "style": "style_issues",
+                "readability": "style_issues"
+            }
+
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+
+                # Check if this is a section header
+                lower_line = line.lower()
+                for section_key, result_key in section_mapping.items():
+                    if section_key in lower_line and (line.startswith('#') or line.startswith('**')):
+                        current_section = result_key
+                        break
+
+                # Check if this is an issue line (usually starts with a number, bullet point, or line reference)
+                if (line.startswith('- ') or line.startswith('* ') or 
+                    line.startswith('Line ') or re.match(r'^\d+\.', line)):
+
+                    # If we have a previous issue in the buffer, add it to results
+                    if issue_buffer and 'description' in issue_buffer and current_section:
+                        if 'line' not in issue_buffer:
+                            issue_buffer['line'] = None
+                        if 'severity' not in issue_buffer:
+                            issue_buffer['severity'] = 'medium'
+                        if 'recommendation' not in issue_buffer:
+                            issue_buffer['recommendation'] = "No specific recommendation provided."
+
+                        results[current_section].append(issue_buffer.copy())
+
+                    # Start a new issue
+                    issue_buffer = {'description': line}
+
+                    # Try to extract line number
+                    line_match = re.search(r'Line\s+(\d+)', line)
+                    if line_match:
+                        try:
+                            parsed_line_num = int(line_match.group(1))
+                            if parsed_line_num > 0: # Only accept positive line numbers
+                                issue_buffer['line'] = parsed_line_num
+                            # If parsed_line_num is 0 or negative, we don't set issue_buffer['line'] here.
+                            # This allows it to be caught by 'if 'line' not in issue_buffer:' later
+                            # and defaulted to None, or for the subsequent detailed parsing (if line is None)
+                            # to attempt to find a valid line number in the description.
+                        except ValueError:
+                            # Should not happen with \\d+ but good practice for int conversion
+                            pass
+
+                    # Try to extract severity
+                    severity_match = re.search(r'\((critical|high|medium|low|info)\)', line, re.IGNORECASE)
+                    if severity_match:
+                        issue_buffer['severity'] = severity_match.group(1).lower()
+                    else:
+                        # Guess severity based on keywords
+                        if any(word in line.lower() for word in ['critical', 'crash', 'exploit', 'vulnerability', 'security']):
+                            issue_buffer['severity'] = 'critical'
+                        elif any(word in line.lower() for word in ['high', 'error', 'bug', 'memory leak']):
+                            issue_buffer['severity'] = 'high'
+                        elif any(word in line.lower() for word in ['medium', 'warning', 'performance']):
+                            issue_buffer['severity'] = 'medium'
+                        elif any(word in line.lower() for word in ['low', 'style', 'readability']):
+                            issue_buffer['severity'] = 'low'
+                        else:
+                            issue_buffer['severity'] = 'info'
+
+                # If this line starts with "Recommendation" or similar, it's a recommendation
+                elif current_section and issue_buffer and ('recommendation' in line.lower() or 'suggestion' in line.lower()):
+                    recommendation_text = line.split(':', 1)[1].strip() if ':' in line else line
+                    issue_buffer['recommendation'] = recommendation_text
+
+                # Otherwise, if we're in an issue, append to the description or set as recommendation
+                elif current_section and issue_buffer:
+                    if 'recommendation' not in issue_buffer and line.startswith('  '):
+                        issue_buffer['recommendation'] = line.strip()
+                    else:
+                        issue_buffer['description'] += " " + line
+
+            # Add the last issue if there is one
+            if issue_buffer and 'description' in issue_buffer and current_section:
+                if 'line' not in issue_buffer:
+                    issue_buffer['line'] = None
+                if 'severity' not in issue_buffer:
+                    issue_buffer['severity'] = 'medium'
+                if 'recommendation' not in issue_buffer:
+                    issue_buffer['recommendation'] = "No specific recommendation provided."
+
+                results[current_section].append(issue_buffer.copy())
+
+            # After parsing all issues, try to fix missing line numbers and support multiple lines
+            for section in results:
+                for issue in results[section]:
+                    if (issue.get('line', None) is None and 'description' in issue):
+                        desc = issue['description']
+                        # Find all line numbers (e.g., 'line 9', 'lines 37, 41', or 'main.cpp:98')
+                        matches = re.findall(r"line[s]?\s*([\d,\s\-]+)", desc, re.IGNORECASE)
+                        colon_matches = re.findall(r":(\d+)", desc)
+                        line_nums = []
+                        for match in matches:
+                            # Support ranges like 10-12
+                            for part in match.split(','):
+                                part = part.strip()
+                                if '-' in part:
+                                    start, end = part.split('-')
+                                    try:
+                                        start, end = int(start), int(end)
+                                        line_nums.extend(list(range(start, end+1)))
+                                    except Exception:
+                                        continue
+                                else:
+                                    try:
+                                        n = int(part)
+                                        if n > 0:
+                                            line_nums.append(n)
+                                    except Exception:
+                                        continue
+                        for num in colon_matches:
+                            n = int(num)
+                            if n > 0 and n not in line_nums:
+                                line_nums.append(n)
+                        if line_nums:
+                            if len(line_nums) == 1:
+                                issue['line'] = line_nums[0]
+                            else:
+                                issue['lines'] = line_nums
+                        else:
+                            issue['line'] = None
+
+        except Exception as e:
+            print(f"[ERROR] Failed to parse analysis: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
+
+        return results
 
     def analyze_file(self, file_path: str) -> Dict[str, Any]:
         """
@@ -428,7 +684,7 @@ def main():
     """Main function to run the analyzer from command line"""
     parser = argparse.ArgumentParser(description="Analyze C++ code using Qwen model")
     parser.add_argument("files", nargs="*", default=None, help="Path to C++ file(s) to analyze")
-    parser.add_argument("--model", default="Qwen/Qwen-7B-Chat", help="Qwen model to use")
+    parser.add_argument("--model", default="https://f6bf-34-69-56-104.ngrok-free.app/Qwen-27B", help="Qwen model to use")
     parser.add_argument("--output", help="Directory to save analysis results (JSON)")
     parser.add_argument("--report", help="Directory to save human-readable reports (Markdown)")
     parser.add_argument("--fix", action="store_true", help="Generate suggested fixes for identified issues")

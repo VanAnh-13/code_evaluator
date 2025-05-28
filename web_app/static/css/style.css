@@ -184,6 +184,9 @@ body {
     padding: 16px;
     border-radius: 8px;
     max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
 }
 
 .message.user .message-content {
@@ -368,6 +371,8 @@ body {
 
 .issue-description {
     margin-bottom: 8px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .issue-recommendation {
@@ -386,6 +391,18 @@ body {
     overflow-x: auto;
     font-family: 'Courier New', Courier, monospace;
     margin-top: 8px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+/* Highlight error line in analysis results */
+.error-line-highlight {
+    background-color: rgba(255, 74, 74, 0.25);
+    color: #ff4a4a;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 /* History page */

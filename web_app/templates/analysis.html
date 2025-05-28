@@ -40,10 +40,21 @@
                             {% for issue in results.syntax_errors %}
                                 <li class="issue-item severity-{{ issue.severity }}">
                                     <div class="issue-header">
-                                        <span class="issue-line">Line {{ issue.line }}</span>
+                                        <span class="issue-line error-line-highlight">Line {{ issue.line }}</span>
                                         <span class="issue-severity">{{ issue.severity }}</span>
                                     </div>
                                     <div class="issue-description">{{ issue.description }}</div>
+                                    {% if issue.lines and file_lines %}
+                                        {% for l in issue.lines %}
+                                            {% if l > 0 and l <= file_lines|length %}
+                                                <pre class="code-block">Line {{ l }}: {{ file_lines[l-1]|replace('\t', '    ')|e }}</pre>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% elif issue.line and issue.line > 0 and file_lines and issue.line <= file_lines|length %}
+                                    <pre class="code-block">{{ file_lines[issue.line-1]|replace('\t', '    ')|e }}</pre>
+                                    {% elif issue.line == 0 %}
+                                    <pre class="code-block" style="color:#ff4a4a;">(No line number provided by analyzer)</pre>
+                                    {% endif %}
                                     <div class="issue-recommendation">
                                         <strong>Recommendation:</strong> {{ issue.recommendation }}
                                     </div>
@@ -60,10 +71,21 @@
                             {% for issue in results.bugs %}
                                 <li class="issue-item severity-{{ issue.severity }}">
                                     <div class="issue-header">
-                                        <span class="issue-line">Line {{ issue.line }}</span>
+                                        <span class="issue-line {% if issue.severity in ['high', 'critical'] %}error-line-highlight{% endif %}">Line {{ issue.line }}</span>
                                         <span class="issue-severity">{{ issue.severity }}</span>
                                     </div>
                                     <div class="issue-description">{{ issue.description }}</div>
+                                    {% if issue.lines and file_lines %}
+                                        {% for l in issue.lines %}
+                                            {% if l > 0 and l <= file_lines|length %}
+                                                <pre class="code-block">Line {{ l }}: {{ file_lines[l-1]|replace('\t', '    ')|e }}</pre>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% elif issue.line and issue.line > 0 and file_lines and issue.line <= file_lines|length %}
+                                    <pre class="code-block">{{ file_lines[issue.line-1]|replace('\t', '    ')|e }}</pre>
+                                    {% elif issue.line == 0 %}
+                                    <pre class="code-block" style="color:#ff4a4a;">(No line number provided by analyzer)</pre>
+                                    {% endif %}
                                     <div class="issue-recommendation">
                                         <strong>Recommendation:</strong> {{ issue.recommendation }}
                                     </div>
@@ -80,10 +102,21 @@
                             {% for issue in results.memory_issues %}
                                 <li class="issue-item severity-{{ issue.severity }}">
                                     <div class="issue-header">
-                                        <span class="issue-line">Line {{ issue.line }}</span>
+                                        <span class="issue-line {% if issue.severity in ['high', 'critical'] %}error-line-highlight{% endif %}">Line {{ issue.line }}</span>
                                         <span class="issue-severity">{{ issue.severity }}</span>
                                     </div>
                                     <div class="issue-description">{{ issue.description }}</div>
+                                    {% if issue.lines and file_lines %}
+                                        {% for l in issue.lines %}
+                                            {% if l > 0 and l <= file_lines|length %}
+                                                <pre class="code-block">Line {{ l }}: {{ file_lines[l-1]|replace('\t', '    ')|e }}</pre>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% elif issue.line and issue.line > 0 and file_lines and issue.line <= file_lines|length %}
+                                    <pre class="code-block">{{ file_lines[issue.line-1]|replace('\t', '    ')|e }}</pre>
+                                    {% elif issue.line == 0 %}
+                                    <pre class="code-block" style="color:#ff4a4a;">(No line number provided by analyzer)</pre>
+                                    {% endif %}
                                     <div class="issue-recommendation">
                                         <strong>Recommendation:</strong> {{ issue.recommendation }}
                                     </div>
@@ -100,10 +133,21 @@
                             {% for issue in results.security_vulnerabilities %}
                                 <li class="issue-item severity-{{ issue.severity }}">
                                     <div class="issue-header">
-                                        <span class="issue-line">Line {{ issue.line }}</span>
+                                        <span class="issue-line {% if issue.severity in ['high', 'critical'] %}error-line-highlight{% endif %}">Line {{ issue.line }}</span>
                                         <span class="issue-severity">{{ issue.severity }}</span>
                                     </div>
                                     <div class="issue-description">{{ issue.description }}</div>
+                                    {% if issue.lines and file_lines %}
+                                        {% for l in issue.lines %}
+                                            {% if l > 0 and l <= file_lines|length %}
+                                                <pre class="code-block">Line {{ l }}: {{ file_lines[l-1]|replace('\t', '    ')|e }}</pre>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% elif issue.line and issue.line > 0 and file_lines and issue.line <= file_lines|length %}
+                                    <pre class="code-block">{{ file_lines[issue.line-1]|replace('\t', '    ')|e }}</pre>
+                                    {% elif issue.line == 0 %}
+                                    <pre class="code-block" style="color:#ff4a4a;">(No line number provided by analyzer)</pre>
+                                    {% endif %}
                                     <div class="issue-recommendation">
                                         <strong>Recommendation:</strong> {{ issue.recommendation }}
                                     </div>
@@ -120,10 +164,21 @@
                             {% for issue in results.performance_issues %}
                                 <li class="issue-item severity-{{ issue.severity }}">
                                     <div class="issue-header">
-                                        <span class="issue-line">Line {{ issue.line }}</span>
+                                        <span class="issue-line {% if issue.severity in ['high', 'critical'] %}error-line-highlight{% endif %}">Line {{ issue.line }}</span>
                                         <span class="issue-severity">{{ issue.severity }}</span>
                                     </div>
                                     <div class="issue-description">{{ issue.description }}</div>
+                                    {% if issue.lines and file_lines %}
+                                        {% for l in issue.lines %}
+                                            {% if l > 0 and l <= file_lines|length %}
+                                                <pre class="code-block">Line {{ l }}: {{ file_lines[l-1]|replace('\t', '    ')|e }}</pre>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% elif issue.line and issue.line > 0 and file_lines and issue.line <= file_lines|length %}
+                                    <pre class="code-block">{{ file_lines[issue.line-1]|replace('\t', '    ')|e }}</pre>
+                                    {% elif issue.line == 0 %}
+                                    <pre class="code-block" style="color:#ff4a4a;">(No line number provided by analyzer)</pre>
+                                    {% endif %}
                                     <div class="issue-recommendation">
                                         <strong>Recommendation:</strong> {{ issue.recommendation }}
                                     </div>
@@ -140,10 +195,21 @@
                             {% for issue in results.style_issues %}
                                 <li class="issue-item severity-{{ issue.severity }}">
                                     <div class="issue-header">
-                                        <span class="issue-line">Line {{ issue.line }}</span>
+                                        <span class="issue-line {% if issue.severity in ['high', 'critical'] %}error-line-highlight{% endif %}">Line {{ issue.line }}</span>
                                         <span class="issue-severity">{{ issue.severity }}</span>
                                     </div>
                                     <div class="issue-description">{{ issue.description }}</div>
+                                    {% if issue.lines and file_lines %}
+                                        {% for l in issue.lines %}
+                                            {% if l > 0 and l <= file_lines|length %}
+                                                <pre class="code-block">Line {{ l }}: {{ file_lines[l-1]|replace('\t', '    ')|e }}</pre>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% elif issue.line and issue.line > 0 and file_lines and issue.line <= file_lines|length %}
+                                    <pre class="code-block">{{ file_lines[issue.line-1]|replace('\t', '    ')|e }}</pre>
+                                    {% elif issue.line == 0 %}
+                                    <pre class="code-block" style="color:#ff4a4a;">(No line number provided by analyzer)</pre>
+                                    {% endif %}
                                     <div class="issue-recommendation">
                                         <strong>Recommendation:</strong> {{ issue.recommendation }}
                                     </div>
