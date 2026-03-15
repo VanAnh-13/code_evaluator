@@ -335,7 +335,7 @@ def main():
     # ============ Analyze command ============
     analyze_parser = subparsers.add_parser("analyze", help="Analyze code files")
     analyze_parser.add_argument("files", nargs="*", help="Path to code file(s) to analyze")
-    analyze_parser.add_argument("--provider", choices=["openai", "anthropic", "gemini"],
+    analyze_parser.add_argument("--provider", choices=["openai", "anthropic", "gemini", "ollama"],
                                 help="API provider (overrides API_PROVIDER env var)")
     analyze_parser.add_argument("--api-key", help="API key (overrides API_KEY env var)")
     analyze_parser.add_argument("--api-model", help="Model name (overrides API_MODEL env var)")
@@ -359,7 +359,7 @@ def main():
     # -- agent analyze <files>
     aa_parser = agent_sub.add_parser("analyze", help="Agent-based file analysis")
     aa_parser.add_argument("files", nargs="*", help="Code file(s) to analyze")
-    aa_parser.add_argument("--provider", choices=["openai", "anthropic", "gemini"],
+    aa_parser.add_argument("--provider", choices=["openai", "anthropic", "gemini", "ollama"],
                            help="API provider")
     aa_parser.add_argument("--api-key", help="API key")
     aa_parser.add_argument("--api-model", help="Model name")
@@ -371,7 +371,7 @@ def main():
     # -- agent project <directory>
     ap_parser = agent_sub.add_parser("project", help="Agent-based project/directory analysis")
     ap_parser.add_argument("directory", help="Project directory to analyze")
-    ap_parser.add_argument("--provider", choices=["openai", "anthropic", "gemini"],
+    ap_parser.add_argument("--provider", choices=["openai", "anthropic", "gemini", "ollama"],
                            help="API provider")
     ap_parser.add_argument("--api-key", help="API key")
     ap_parser.add_argument("--max-steps", type=int, help="Max agent steps (default: 25)")
@@ -381,7 +381,7 @@ def main():
 
     # -- agent chat
     ac_parser = agent_sub.add_parser("chat", help="Interactive agent conversation")
-    ac_parser.add_argument("--provider", choices=["openai", "anthropic", "gemini"],
+    ac_parser.add_argument("--provider", choices=["openai", "anthropic", "gemini", "ollama"],
                            help="API provider")
     ac_parser.add_argument("--api-key", help="API key")
     ac_parser.add_argument("--max-steps", type=int, help="Max steps per turn (default: 50)")

@@ -15,6 +15,7 @@ DEFAULT_MODELS = {
     "openai": "gpt-4o-mini",
     "anthropic": "claude-sonnet-4-20250514",
     "gemini": "gemini-2.0-flash",
+    "ollama": "codellama",
 }
 
 
@@ -75,9 +76,12 @@ class APIConfig:
 
     def validate(self) -> bool:
         """Check if the configuration is valid"""
+        # Ollama doesn't require an API key (local hosting)
+        if self.provider == "ollama":
+            return True
         if not self.api_key:
             return False
-        if self.provider not in ("openai", "anthropic", "gemini"):
+        if self.provider not in ("openai", "anthropic", "gemini", "ollama"):
             return False
         return True
 
@@ -95,5 +99,6 @@ class APIConfig:
             "openai": "OpenAI",
             "anthropic": "Anthropic",
             "gemini": "Google Gemini",
+            "ollama": "Ollama (Local)",
         }
         return names.get(self.provider, self.provider.title())

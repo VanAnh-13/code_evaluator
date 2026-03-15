@@ -4,7 +4,11 @@ Multi-language code analysis platform for CLI, Web UI, and API workflows.
 
 `Code Evaluator` analyzes source code for syntax problems, bugs, memory/resource risks, security issues, performance bottlenecks, and maintainability concerns. It supports multiple LLM providers through a unified architecture and returns structured, integration-friendly output.
 
-> Current repository state is API-provider based (OpenAI, Anthropic, Gemini). Legacy self-hosted scripts still exist for backward compatibility.
+**✨ New in v1.0:**
+- 🦙 **Ollama Support**: Run analysis with local LLMs (no API key needed!)
+- 🧪 **Comprehensive Test Suite**: Full pytest coverage for quality assurance
+- 🚀 **CI/CD Pipeline**: Automated testing and releases with GitHub Actions
+- 📚 **Enhanced Documentation**: Complete API docs and contributing guidelines
 
 ## Introduction
 
@@ -17,13 +21,14 @@ You can use it in three ways:
 
 ## Key Features
 
-- Multi-language analysis (C/C++, Python, JavaScript, Java, and more via extension detection)
-- Multi-provider LLM backend (`openai`, `anthropic`, `gemini`) via `APIConfig`
-- Structured JSON output with summary, score, normalized issues, and suggested fixes
-- Web dashboard (`/`) with editor flow plus history page (`/history`)
-- API endpoint `POST /api/analyze` for machine-to-machine integration
-- Agent mode (CLI + web endpoints under `/api/agent/*`) for multi-step workflows
-- Caching for repeated file analysis and markdown/JSON report export support
+- 🌐 **Multi-language analysis**: C/C++, Python, JavaScript, Java, TypeScript, Go, Rust, and more
+- 🤖 **Multi-provider LLM backend**: OpenAI, Anthropic, Gemini, and **Ollama** (local!)
+- 📊 **Structured JSON output**: Summary, score, categorized issues, and suggested fixes
+- 💻 **Web dashboard**: Interactive editor with analysis history
+- 🔌 **REST API**: `POST /api/analyze` endpoint for programmatic integration
+- 🧠 **Agent mode**: Multi-step AI workflows for complex analysis
+- ⚡ **Performance**: Smart caching and concurrent analysis
+- 📝 **Report export**: Markdown and JSON formats
 
 ## Use Cases
 
@@ -61,6 +66,18 @@ Use the agent path for iterative, tool-augmented analysis sessions.
 
 ```powershell
 python -m code_evaluator.main agent analyze .\examples\example.py --max-steps 15
+```
+
+### 5) Local LLM with Ollama
+
+Run analysis completely offline with Ollama:
+
+```powershell
+# Start Ollama server (if not running)
+ollama serve
+
+# Analyze with local model
+python -m code_evaluator.main analyze .\examples\example.py --provider ollama --api-model codellama
 ```
 
 ## Demo
@@ -199,12 +216,12 @@ Environment variables used by current code paths (`code_evaluator/model/config.p
 
 | Variable | Purpose | Default |
 |---|---|---|
-| `API_PROVIDER` | LLM provider: `openai`, `anthropic`, `gemini` | `openai` |
-| `API_KEY` | Provider API key | empty |
+| `API_PROVIDER` | LLM provider: `openai`, `anthropic`, `gemini`, `ollama` | `openai` |
+| `API_KEY` | Provider API key (not needed for `ollama`) | empty |
 | `API_MODEL` | Optional model override | provider-specific |
 | `API_TEMPERATURE` | Generation temperature | `0.3` |
 | `API_MAX_TOKENS` | Max output tokens | `4096` |
-| `API_BASE_URL` | Custom endpoint/proxy | unset |
+| `API_BASE_URL` | Custom endpoint/proxy (for Ollama: `http://localhost:11434`) | unset |
 | `API_TIMEOUT` | Request timeout (seconds) | `120` |
 | `SECRET_KEY` | Flask secret key | auto-generated |
 | `PORT` | Web server port | `5000` |
@@ -241,9 +258,21 @@ We welcome contributions of all sizes.
 Suggested local sanity commands:
 
 ```powershell
-python -m pytest -q
+# Run tests
+pytest
+
+# Run with coverage
+pytest --cov=code_evaluator --cov-report=html
+
+# Run linting
+black code_evaluator tests --check
+flake8 code_evaluator tests
+
+# Test CLI
 python -m code_evaluator.main analyze .\examples\example.cpp
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines.
 
 ## License
 
@@ -260,7 +289,24 @@ Planned direction (proposal aligned with current modules):
 - [ ] **Q4 2026**: expand provider observability (latency, retries, provider fallback telemetry)
 - [ ] **Q4 2026**: package release hardening (versioned changelog + release automation)
 
-## Legacy Notes
+## Additional Documentation
 
-- Legacy scripts such as `code_analyzer.py` and `finetune.py` remain in the repository for earlier workflows.
-- The active architecture in this README follows the package-based API-provider implementation under `code_evaluator/`.
+- **[API Documentation](docs/API.md)** - Complete REST API and Python API reference
+- **[Contributing Guide](CONTRIBUTING.md)** - Development setup and guidelines
+- **[GitHub Actions](.github/workflows/)** - CI/CD pipeline configuration
+
+## Recent Updates
+
+**v1.0.0** (2025)
+- ✨ Added Ollama client for local LLM inference
+- ✅ Comprehensive test suite with pytest
+- 🚀 GitHub Actions CI/CD pipeline
+- 📚 Complete API documentation
+- 🧹 Removed legacy code and cleaned up repository
+- 🔧 Development tooling (black, flake8, isort, pre-commit hooks)
+
+## Performance Notes
+
+- **Caching**: Analysis results are cached to avoid redundant API calls
+- **Parallel Analysis**: Multiple files analyzed concurrently when possible
+- **Local Ollama**: Zero API costs, complete privacy, offline capability

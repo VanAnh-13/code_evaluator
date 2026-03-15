@@ -28,7 +28,8 @@ def create_client(config: Optional[APIConfig] = None) -> BaseLLMClient:
     if config is None:
         config = APIConfig.from_env()
 
-    if not config.api_key:
+    # Ollama doesn't require API key (local hosting)
+    if not config.api_key and config.provider != "ollama":
         raise ValueError(
             f"API key is required for {config.provider_display_name}. "
             f"Set the API_KEY environment variable or pass it in the configuration."
@@ -55,8 +56,14 @@ def create_client(config: Optional[APIConfig] = None) -> BaseLLMClient:
         from code_evaluator.model.gemini_client import GeminiClient
         return GeminiClient(**client_kwargs)
 
+    elif config.provider == "ollama":
+        from code_evaluator.model.ollama_client import OllamaClient
+        # Ollama doesn't require API key for local hosting
+        client_kwargs["base_url"] = config.base_url or "http://localhost:11434"
+        return OllamaClient(**client_kwargs)
+
     else:
         raise ValueError(
             f"Unknown provider: '{config.provider}'. "
-            f"Supported providers: openai, anthropic, gemini"
+            f"Supported providers: openai, anthropic, gemini, ollama"
         )
