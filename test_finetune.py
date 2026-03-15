@@ -7,7 +7,27 @@ import os
 import sys
 import argparse
 import logging
-from finetune import create_sample_dataset, finetune_model
+
+# Add current directory to path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Import from new package structure
+from code_evaluator.finetune.trainer import finetune_model
+from code_evaluator.finetune.dataset import CodeAnalysisDataset
+
+def create_sample_dataset(output_path, num_samples=10):
+    """Create a sample dataset for testing"""
+    import json
+    samples = []
+    for i in range(num_samples):
+        samples.append({
+            "instruction": f"Analyze this code sample {i}",
+            "input": f"def test_{i}():\n    pass",
+            "output": f"This is a simple test function {i}."
+        })
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(samples, f, ensure_ascii=False, indent=2)
+    return output_path
 
 # Configure logging
 logging.basicConfig(
@@ -22,7 +42,7 @@ def main():
     parser = argparse.ArgumentParser(description="Test the fine-tuning functionality")
     
     # Test configuration
-    parser.add_argument("--model_name", type=str, default="qwen2:7b",
+    parser.add_argument("--model_name", type=str, default="Qwen/Qwen-7B-Chat", 
                         help="Name or path of the pre-trained model")
     parser.add_argument("--output_dir", type=str, default="test-fine-tuned-model", 
                         help="Directory to save the fine-tuned model")

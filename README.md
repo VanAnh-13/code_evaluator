@@ -1,527 +1,535 @@
-# Code Analyzer using Qwen
+# Code Analyzer
 
-This tool analyzes code in multiple programming languages for potential issues, code quality, and security vulnerabilities using the Qwen large language model.
+A multi-language code analysis tool — detects bugs, security vulnerabilities, performance issues, and suggests fixes.
 
-## Features
+> **This project has 2 versions:** v1 (self-hosted Qwen model) and v2 (API KEY — OpenAI / Anthropic / Gemini). See details below.
 
-- Supports multiple programming languages (C++, Python, JavaScript, Java, and more)
-- Detects potential bugs and logical errors
-- Identifies memory and resource management issues
-- Finds security vulnerabilities
-- Highlights performance issues
-- Suggests code style and readability improvements
-- Generates language-specific suggested fixes for identified issues
-- Supports analyzing multiple files
-- Caches analysis results for improved performance
-- Provides detailed reports in both JSON and Markdown formats
-- Web interface for uploading and analyzing code files
-- ChatGPT-like UI for viewing analysis results
+---
 
-## Installation
+## Version Comparison
 
-### Using pip
+| | **v1 — Self-hosted Model** | **v2 — API KEY** |
+|---|---|---|
+| **LLM** | Qwen-7B-Chat (self-hosted locally) | OpenAI GPT-4o / Anthropic Claude / Google Gemini |
+| **Hardware Requirements** | NVIDIA GPU (VRAM ≥ 8GB) or CPU (very slow) | No GPU needed — only internet + API key |
+| **Web Interface** | ChatGPT-like UI, sidebar, file upload | Modern dashboard, split-panel, CodeMirror editor |
+| **Code Input** | Upload file (.cpp, .py, .js...) | Paste directly / drag & drop / upload |
+| **Output Format** | Markdown (parsed with regex) | JSON structured (with schema) |
+| **Theme** | Dark only | Dark / Light toggle |
+| **Fine-tuning** | LoRA fine-tuning supported | Not available (uses provider's pre-trained models) |
+| **Dependencies** | ~8GB (torch, transformers, modelscope...) | ~50MB (openai, anthropic, google-generativeai) |
+| **Prompts** | 4 separate language-specific files (cpp.txt, python.txt...) | 1 universal multi-language prompt |
+| **API Endpoint** | None | `POST /api/analyze` (JSON) |
+
+---
+
+# V1 — Self-hosted Qwen Model (Original Version)
+
+## Features (v1)
+
+- Multi-language code analysis (C++, Python, JavaScript, Java...)
+- Detects bugs, memory leaks, security vulnerabilities, performance issues
+- Suggested fixes via `--fix` flag
+- LoRA fine-tuning on custom datasets
+- ChatGPT-like web UI (sidebar + chat messages)
+- Analysis result caching
+- JSON and Markdown report export
+
+## Installation (v1)
 
 ```bash
-# Clone the repository
-https://github.com/VanAnh-13/code_evaluator.git
-cd cpp-code-analyzer
+git clone https://github.com/VanAnh-13/code_evaluator.git
+cd code_evaluator
 
-# Install dependencies (Method 1 - Recommended)
+# Install dependencies (recommended)
 python install_dependencies.py
 
-# OR Install dependencies manually (Method 2)
+# Or install manually
 pip install -r requirements.txt
 ```
 
-### Using Docker
+### Dependencies (v1)
 
-```bash
-# Build the Docker image
-docker build -t code-analyzer .
-
-# Run the analyzer using Docker
-docker run -v $(pwd):/data code-analyzer /data/your_file.cpp
-
-# Analyze Python files
-docker run -v $(pwd):/data code-analyzer /data/your_script.py
-
-# Analyze JavaScript files
-docker run -v $(pwd):/data code-analyzer /data/your_script.js
+```
+transformers==4.38.2
+torch==2.2.2
+modelscope==1.9.5
+sentencepiece==0.1.99
+colorama==0.4.6
+tqdm==4.66.1
+numpy==1.24.4
+flask==2.3.3
+werkzeug==2.3.7
+flask-wtf==1.2.1
+wtforms==3.0.1
+python-dotenv==1.0.0
+# Fine-tuning
+peft==0.7.1
+datasets==2.16.1
+accelerate==0.25.0
+bitsandbytes==0.41.1
+scipy==1.11.4
 ```
 
-## Usage
+> ⚠️ Total dependency size ~8GB (including PyTorch + model weights).
 
-### Code Analysis
+## Usage (v1)
+
+### CLI
 
 ```bash
-# Basic usage with a single file
-python code_analyzer.py path/to/your/file.cpp
+# Analyze a file
+python code_analyzer.py path/to/file.cpp
 
-# Analyze Python files
-python code_analyzer.py path/to/your/script.py
-
-# Analyze JavaScript files
-python code_analyzer.py path/to/your/script.js
-
-# Analyze multiple files of different languages
+# Analyze multiple files
 python code_analyzer.py file1.cpp file2.py file3.js
 
-# Save results to a directory (creates JSON files for each analyzed file)
-python code_analyzer.py path/to/your/file.cpp --output results_dir
+# Save JSON results
+python code_analyzer.py path/to/file.cpp --output results_dir
 
-# Save human-readable reports to a directory
-python code_analyzer.py path/to/your/file.py --report reports_dir
+# Save Markdown report
+python code_analyzer.py path/to/file.py --report reports_dir
 
-# Generate suggested fixes for identified issues
-python code_analyzer.py path/to/your/file.js --fix
+# Suggest fixes
+python code_analyzer.py path/to/file.js --fix
 
-# Disable caching of analysis results
-python code_analyzer.py path/to/your/file.cpp --no-cache
+# Specify a different model
+python code_analyzer.py path/to/file.cpp --model Qwen/Qwen-14B-Chat
 
-# Enable verbose output
-python code_analyzer.py path/to/your/file.py --verbose
-
-# Specify a different Qwen model
-python code_analyzer.py path/to/your/file.js --model Qwen/Qwen-14B-Chat
+# Verbose output
+python code_analyzer.py path/to/file.py --verbose
 ```
 
-### Fine-tuning
+### Web UI (v1)
 
-The Code Analyzer supports fine-tuning the Qwen model on custom code analysis datasets to improve its performance for specific languages or domains.
+```bash
+# Windows
+run_web.bat
+# or
+python run_web.py
 
-#### Dataset Format
+# Linux/Mac
+./run_web.sh
+# or
+python3 run_web.py
+```
 
-The fine-tuning dataset should be a JSON file with the following structure:
+Open **http://localhost:5000** — ChatGPT-like interface:
+1. Select a code file from your computer (upload)
+2. Click Analyze
+3. View analysis results as chat messages
+4. Browse history from the sidebar
+
+### Fine-tuning (v1)
+
+```bash
+# Create sample dataset
+python finetune.py --create_sample --sample_path my_dataset.json --num_samples 20
+
+# Fine-tune with LoRA
+python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model --use_lora
+
+# Fine-tune with 8-bit quantization
+python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model \
+  --use_lora --load_in_8bit
+
+# Fine-tune with custom hyperparameters
+python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model \
+  --use_lora --lora_r 16 --lora_alpha 32 --learning_rate 1e-5 \
+  --num_train_epochs 5 --per_device_train_batch_size 2 --fp16
+
+# Use the fine-tuned model
+python code_analyzer.py path/to/file.cpp --model fine-tuned-model
+```
+
+#### Fine-tuning Dataset Format
 
 ```json
 [
   {
     "language": "cpp",
-    "code": "// Your C++ code here",
-    "analysis": "Detailed analysis of the code with issues and recommendations"
+    "code": "// C++ code here",
+    "analysis": "Detailed analysis..."
   },
   {
     "language": "python",
-    "code": "# Your Python code here",
-    "analysis": "Detailed analysis of the code with issues and recommendations"
+    "code": "# Python code here",
+    "analysis": "Detailed analysis..."
   }
 ]
 ```
 
-#### Fine-tuning Commands
+### Docker (v1)
 
 ```bash
-# Create a sample dataset for testing
-python finetune.py --create_sample --sample_path my_dataset.json --num_samples 20
-
-# Fine-tune the model using the sample dataset
-python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model
-
-# Use LoRA for parameter-efficient fine-tuning (recommended for large models)
-python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model --use_lora
-
-# Fine-tune with 8-bit quantization to reduce memory usage
-python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model --use_lora --load_in_8bit
-
-# Fine-tune with custom hyperparameters
-python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model \
-  --use_lora --lora_r 16 --lora_alpha 32 --learning_rate 1e-5 \
-  --num_train_epochs 5 --per_device_train_batch_size 2 \
-  --gradient_accumulation_steps 8 --fp16
-
-# Fine-tune a different Qwen model
-python finetune.py --data_path my_dataset.json --output_dir fine-tuned-model \
-  --model_name Qwen/Qwen-14B-Chat --use_lora
+docker build -t code-analyzer .
+docker run -v $(pwd):/data code-analyzer /data/your_file.cpp
+docker run -p 5000:5000 code-analyzer
 ```
 
-#### Using a Fine-tuned Model
-
-After fine-tuning, you can use the fine-tuned model for code analysis:
-
-```bash
-python code_analyzer.py path/to/your/file.cpp --model fine-tuned-model
-```
-
-## Requirements
-
-- Python 3.8+
-- transformers==4.38.2
-- torch==2.2.2+cpu (CPU-only version)
-- modelscope==1.9.5
-- sentencepiece==0.1.99
-- colorama==0.4.6
-- tqdm==4.66.1
-- numpy==1.24.4
-- flask==2.3.3
-- werkzeug==2.3.7
-- flask-wtf==1.2.1
-- wtforms==3.0.1
-- python-dotenv==1.0.0
-
-### Fine-tuning Requirements
-
-Additional dependencies for fine-tuning:
-
-- peft==0.7.1 (Parameter-Efficient Fine-Tuning)
-- datasets==2.16.1 (Hugging Face Datasets)
-- accelerate==0.25.0 (Distributed training support)
-- bitsandbytes==0.41.1 (Quantization support)
-- scipy==1.11.4 (Required by some fine-tuning libraries)
-
-### Language-Specific Requirements
-
-- g++ (for C++ syntax checking)
-- pylint (for Python syntax checking)
-- node.js and eslint (for JavaScript syntax checking, optional)
-- javac (for Java syntax checking, optional)
-- dotnet (for C# syntax checking, optional)
-
-## Examples
-
-### C++ Example
-
-Input C++ file (`example.cpp`):
-
-```cpp
-#include <iostream>
-#include <cstring>
-
-void process_data(char* data, size_t size) {
-    char* buffer = new char[size];
-    memcpy(buffer, data, size);
-
-    // Process buffer
-    for (size_t i = 0; i < size; i++) {
-        buffer[i] = toupper(buffer[i]);
-    }
-
-    // Return processed data
-    memcpy(data, buffer, size);
-
-    // Forgot to delete buffer
-}
-
-int main() {
-    char data[] = "hello world";
-    process_data(data, strlen(data));
-    std::cout << data << std::endl;
-    return 0;
-}
-```
-
-Output report:
+### Architecture (v1)
 
 ```
-# Code Analysis Report
-File: example.cpp
-Language: cpp
+code_evaluator/
+├── model/
+│   ├── loader.py         # Load Qwen model via transformers + torch
+│   └── __init__.py
+├── analyzer/
+│   ├── code_analyzer.py  # Tokenize → generate → decode → regex parse
+│   ├── parser.py         # Regex-based markdown parser
+│   ├── syntax_checker.py
+│   └── fix_suggester.py
+├── finetune/             # LoRA fine-tuning pipeline
+│   ├── trainer.py
+│   ├── dataset.py
+│   └── cli.py
+├── web/
+│   ├── app.py
+│   ├── routes.py         # Upload file → analyze → render template
+│   ├── templates/        # ChatGPT-like UI (sidebar + chat)
+│   └── static/
+├── report/
+├── utils/
+└── main.py
 
-Total issues found: 5
+prompts/
+├── cpp.txt               # C++-specific prompt
+├── python.txt            # Python-specific prompt
+├── javascript.txt        # JavaScript-specific prompt
+├── default.txt           # Default prompt
+└── output_format.txt     # Output format instructions
+```
 
-## Bugs and Logical Errors (1)
+### Output Format (v1 — Markdown)
+
+```
+## Bugs and Logical Errors
 - Line 15 (high): Potential null pointer dereference
-  Recommendation: Add null check before dereferencing pointer
+  Recommendation: Add null check before dereferencing
 
-## Memory Management Issues (1)
+## Memory Management Issues
 - Line 23 (critical): Memory leak: allocated memory not freed
   Recommendation: Add delete[] or use smart pointers
 
-## Security Vulnerabilities (1)
+## Security Vulnerabilities
 - Line 42 (medium): Buffer overflow risk in strcpy
   Recommendation: Use strncpy or std::string instead
-
-## Performance Issues (1)
-- Line 57 (low): Inefficient loop implementation
-  Recommendation: Consider using std::transform or range-based for loop
-
-## Code Style and Readability (1)
-- Line 10 (info): Inconsistent naming convention
-  Recommendation: Follow a consistent naming style (e.g., camelCase or snake_case)
 ```
 
-### Python Example
+---
 
-Input Python file (`example.py`):
+# V2 — API KEY (Current Version)
 
-```python
-def calculate_average(numbers):
-    total = 0
-    count = 0
+## Features (v2)
 
-    for num in numbers:
-        total += num
-        count += 1
+- **Multi-language** — C/C++, Python, JavaScript, Java, Go, Rust, Ruby, PHP, Swift, HTML, CSS
+- **Multi-provider** — OpenAI (GPT-4o), Anthropic (Claude), Google Gemini — switch seamlessly
+- **Modern dashboard** — Split-panel with CodeMirror editor, score ring, issue cards
+- **Dark / Light theme** — Automatically saves preference, instant toggle
+- **Realtime analysis** — Paste code / drag & drop files, get results via AJAX
+- **JSON structured output** — Schema-validated results, easy to integrate
+- **Detects 6 issue categories**: Syntax, Bugs, Memory, Security, Performance, Style
+- **Score 0-100** with summary and specific fix suggestions
+- **Result caching** to avoid duplicate analysis
+- **CLI** for batch file analysis, JSON/Markdown export
+- **API endpoint** `POST /api/analyze` for external integration
 
-    # Potential division by zero if numbers is empty
-    return total / count
-
-def main():
-    # Undefined variable used
-    print(user_input)
-
-    # Inefficient list creation
-    result = []
-    for i in range(1000):
-        result.append(i * i)
-
-    # Resource not properly closed
-    f = open("data.txt", "r")
-    content = f.read()
-    print(content)
-
-    # Calculating average of empty list will cause error
-    print(calculate_average([]))
-
-if __name__ == "__main__":
-    main()
-```
-
-Output report:
-
-```
-# Code Analysis Report
-File: example.py
-Language: python
-
-Total issues found: 4
-
-## Syntax Errors (1)
-- Line 13 (high): Syntax issue: Undefined variable 'user_input'
-  Recommendation: Define variable 'user_input' before using it
-
-## Bugs and Logical Errors (1)
-- Line 9 (high): Potential division by zero error
-  Recommendation: Add a check to ensure count is not zero before division
-
-## Resource Management Issues (1)
-- Line 21 (medium): File resource not properly closed
-  Recommendation: Use 'with open()' statement or call f.close()
-
-## Performance Issues (1)
-- Line 16 (low): Inefficient list creation
-  Recommendation: Use list comprehension: result = [i * i for i in range(1000)]
-```
-
-## Full Implementation
-
-The full implementation uses the Qwen model to analyze code in multiple programming languages. It loads the model using the transformers library and generates detailed analysis based on the code content. The analyzer automatically detects the programming language based on the file extension and applies language-specific analysis techniques.
-
-## Optimizations
-
-This tool has been optimized for performance and efficiency:
-
-### Code Optimizations
-- **Caching mechanism**: Analysis results are cached based on file modification time to avoid redundant processing
-- **Improved error handling**: Specific error types with descriptive messages
-- **Multiple file support**: Process multiple C++ files in a single run
-- **Memory efficiency**: Avoid reading files multiple times
-- **Progress reporting**: Verbose mode for detailed progress information
-
-### Docker Optimizations
-- **Multi-stage build**: Reduces final image size by separating build and runtime environments
-- **Layer caching**: Optimized layer structure for faster builds
-- **Security enhancements**: Runs as non-root user
-- **Environment variables**: Configured for optimal Python performance
-- **Pinned dependencies**: Exact versions specified for reproducibility
-
-## Web Interface
-
-The Code Analyzer includes a web interface with a ChatGPT-like UI for uploading and analyzing code files in multiple programming languages.
-
-### Running the Web Server
-
-#### Windows Users
+## Installation (v2)
 
 ```bash
-# Method 1: Using the batch file (easiest)
-run_web.bat
-
-# Method 2: Using the Python script
-python run_web.py
-
-# Method 3: Directly running the Flask app
-cd web_app
-python app.py
+git clone https://github.com/VanAnh-13/code_evaluator.git
+cd code_evaluator
+pip install -r requirements.txt
 ```
 
-#### Linux/Mac Users
+### Dependencies (v2)
+
+```
+flask==2.3.3
+werkzeug==2.3.7
+flask-wtf==1.2.1
+python-dotenv==1.0.0
+openai>=1.30.0
+anthropic>=0.26.0
+google-generativeai>=0.5.0
+```
+
+> ✅ Only ~50MB — no torch or GPU required.
+
+### API Key Configuration
 
 ```bash
-# Method 1: Using the shell script (easiest)
-chmod +x run_web.sh  # Make the script executable (first time only)
-./run_web.sh
-
-# Method 2: Using the Python script
-python3 run_web.py
-
-# Method 3: Directly running the Flask app
-cd web_app
-python3 app.py
+cp .env.example .env
 ```
 
-The web server will start on http://localhost:5000 by default. You can access the web interface by opening this URL in your browser.
+Edit `.env`:
 
-#### Troubleshooting
+```env
+# Provider: openai | anthropic | gemini
+API_PROVIDER=openai
 
-If you encounter a "ModuleNotFoundError: No module named 'flask'" error, you need to install the required dependencies:
+# API key (required)
+API_KEY=sk-your-api-key-here
+
+# Model (optional, leave empty for default)
+API_MODEL=
+```
+
+**Default models per provider:**
+
+| Provider | Default Model | Other Models |
+|----------|---------------|--------------|
+| OpenAI | `gpt-4o-mini` | `gpt-4o`, `gpt-4-turbo` |
+| Anthropic | `claude-sonnet-4-20250514` | `claude-3-haiku-20240307` |
+| Gemini | `gemini-2.0-flash` | `gemini-1.5-pro` |
+
+## Usage (v2)
+
+### Web Interface (Recommended)
 
 ```bash
 # Windows
-python install_dependencies.py
+python run_web.py
+# or
+run_web.bat
 
 # Linux/Mac
-python3 install_dependencies.py
+python3 run_web.py
+# or
+./run_web.sh
 ```
 
-### Using the Web Interface
+Open **http://localhost:5000**
 
-1. Open your browser and navigate to http://localhost:5000
-2. Click the "Choose a code file" button to select a code file from your computer (supports C++, Python, JavaScript, Java, and more)
-3. Click "Analyze" to upload and analyze the file
-4. View the analysis results in the ChatGPT-like interface
-5. Access your analysis history from the sidebar
+#### Dashboard Interface
 
-### Docker Deployment
+- **Left panel**: CodeMirror editor — paste code, select language, or drag & drop files
+- **Right panel**: Analysis results — score ring, summary, issues by category
+- **Top bar**: Page navigation (New Analysis / History), dark/light theme toggle, active provider
 
-You can also run the web interface using Docker:
+#### Workflow
+
+1. Paste code into the editor or drag & drop a file (auto-detects language)
+2. Select language from dropdown (or leave as Auto Detect)
+3. Click **Analyze** — results appear in realtime via AJAX
+4. View score, summary, and issues by tab (Bugs, Security, Performance...)
+5. View suggested fixes if available
+6. Browse analysis history on the History page
+
+### CLI (v2)
 
 ```bash
-# Build the Docker image
-docker build -t code-analyzer-web .
+# Analyze a single file
+python -m code_evaluator.main analyze path/to/file.cpp
 
-# Run the container
-docker run -p 5000:5000 code-analyzer-web
+# Analyze multiple files
+python -m code_evaluator.main analyze file1.py file2.js file3.cpp
+
+# Save JSON results
+python -m code_evaluator.main analyze path/to/file.py --output results/
+
+# Save Markdown report
+python -m code_evaluator.main analyze path/to/file.py --report reports/
+
+# Specify provider and model via CLI
+python -m code_evaluator.main analyze path/to/file.cpp \
+  --provider openai --api-key sk-xxx --api-model gpt-4o
+
+# Verbose output
+python -m code_evaluator.main analyze path/to/file.py -v
 ```
 
-Then access the web interface at http://localhost:5000.
+### Docker (v2)
+
+```bash
+# Build image (lightweight, no CUDA needed)
+docker build -t code-analyzer .
+
+# Run web server
+docker run -p 5000:5000 \
+  -e API_PROVIDER=openai \
+  -e API_KEY=sk-your-key \
+  code-analyzer
+```
+
+### Architecture (v2)
+
+```
+code_evaluator/
+├── model/              # API provider layer
+│   ├── config.py       # APIConfig — loads from env vars
+│   ├── base_client.py  # BaseLLMClient ABC
+│   ├── openai_client.py
+│   ├── anthropic_client.py
+│   ├── gemini_client.py
+│   ├── factory.py      # create_client() factory
+│   └── loader.py       # ModelLoader wrapper
+├── analyzer/
+│   ├── code_analyzer.py  # Orchestrator — build messages → API call → parse
+│   ├── parser.py       # JSON parser + regex fallback
+│   ├── syntax_checker.py
+│   └── fix_suggester.py
+├── web/
+│   ├── app.py          # App factory + dotenv
+│   ├── routes.py       # Routes + POST /api/analyze
+│   ├── validators.py
+│   ├── templates/      # Dashboard UI (CodeMirror, score ring, tabs)
+│   └── static/         # Dual-theme CSS + AJAX JS
+├── report/
+├── utils/
+└── main.py
+
+prompts/
+├── universal.txt       # Single multi-language prompt (replaces 4 old files)
+└── output_schema.json  # JSON Schema for output format
+```
+
+### Data Flow (v2)
+
+```
+User (CodeMirror Editor / CLI)
+  → POST /api/analyze { code, language }
+    → CodeAnalyzer.analyze_code()
+      → Build chat messages (system prompt + user code)
+      → ModelLoader.analyze() → BaseLLMClient.chat()
+        → OpenAI / Anthropic / Gemini API
+      → parse_json_response() → structured results
+    → JSON response → Render dashboard (AJAX)
+```
+
+### Output Format (v2 — JSON)
+
+```json
+{
+  "language": "python",
+  "summary": "Code is simple and functional with minor style issues.",
+  "overall_score": 85,
+  "issues": [
+    {
+      "line": 2,
+      "category": "style",
+      "severity": "low",
+      "description": "Missing docstring for function",
+      "recommendation": "Add a docstring describing the function's purpose"
+    }
+  ],
+  "suggested_fixes": [
+    {
+      "line": 1,
+      "original": "def hello():",
+      "fixed": "def hello():\n    \"\"\"Print greeting.\"\"\"",
+      "explanation": "Added docstring"
+    }
+  ]
+}
+```
+
+### API Endpoint
+
+#### `POST /api/analyze`
+
+Analyze code directly via JSON API (used by the frontend AJAX or external integrations):
+
+**Request:**
+```json
+{
+  "code": "def hello():\n    print('world')",
+  "language": "python"
+}
+```
+
+**Response:** (see Output Format v2 above)
+
+### Advanced Configuration (v2)
+
+| Environment Variable | Description | Default |
+|---------------------|-------------|---------|
+| `API_PROVIDER` | Provider: `openai`, `anthropic`, `gemini` | `openai` |
+| `API_KEY` | API key (required) | — |
+| `API_MODEL` | Model name | Default per provider |
+| `API_TEMPERATURE` | Text generation temperature (0.0 – 1.0) | `0.1` |
+| `API_MAX_TOKENS` | Maximum tokens for response | `4096` |
+| `API_TIMEOUT` | Timeout (seconds) | `120` |
+| `API_BASE_URL` | Custom base URL (proxy, compatible API) | — |
+| `SECRET_KEY` | Flask secret key | Auto-generated |
+| `PORT` | Web server port | `5000` |
+
+---
+
+## Key Changes from v1 → v2
+
+| Component | v1 | v2 |
+|-----------|----|----|
+| `model/loader.py` | Load Qwen via `transformers` + `torch` | Wraps `BaseLLMClient` (API call) |
+| `model/` | Only `loader.py` | Added `config.py`, `base_client.py`, 3 provider clients, `factory.py` |
+| `analyzer/parser.py` | Regex parse markdown output | `parse_json_response()` + regex fallback |
+| `analyzer/code_analyzer.py` | Tokenize → generate → decode | Build chat messages → API call |
+| `prompts/` | 4 separate files + `output_format.txt` | `universal.txt` + `output_schema.json` |
+| Web templates | ChatGPT-like (sidebar + chat) | Dashboard (top bar + split panel + CodeMirror) |
+| CSS | Dark only, sidebar layout | Dual theme (CSS variables), dashboard layout |
+| JS | File upload + hljs highlight | CodeMirror editor + AJAX + drag-drop + theme toggle |
+| `routes.py` | `POST /upload` (form) | Added `POST /api/analyze` (JSON API) |
+| `requirements.txt` | torch, transformers, modelscope... (~8GB) | openai, anthropic, google-generativeai (~50MB) |
+| `main.py` CLI | `--model Qwen/Qwen-7B-Chat`, `--fix` | `--provider`, `--api-key`, `--api-model` |
+| Fine-tuning | Yes (`finetune/` module) | No (uses provider's pre-trained models) |
+| Dockerfile | Multi-stage, requires g++, ~4GB image | Single stage, ~200MB image |
+
+## System Requirements
+
+### v1
+- Python 3.8+
+- NVIDIA GPU (VRAM ≥ 8GB) or CPU (slow)
+- ~10GB disk (dependencies + model weights)
+
+### v2
+- Python 3.8+
+- API key from at least 1 provider (OpenAI / Anthropic / Google)
+- No GPU required
+
+### Syntax Checker (Optional, both versions)
+
+- **C/C++**: Install `g++` (MinGW on Windows, `build-essential` on Linux)
+- **Python**: `pip install pylint`
+- **JavaScript**: `npm install -g eslint`
+- **Java**: Install JDK (includes `javac`)
 
 ## Troubleshooting
 
-### Installation Issues
+### V1
 
-#### Wheel Building Errors
+**`CUDA out of memory`**
+- Use `--load_in_8bit` or `--load_in_4bit` when fine-tuning
+- Reduce `--max_length` and `--per_device_train_batch_size`
 
-If you encounter errors during installation related to building wheels, such as:
+**Model download slow / fails**
+- Check network connectivity to HuggingFace and ModelScope
+- Try `--model` pointing to a local model directory
 
-```
-error: subprocess-exited-with-error
-× Getting requirements to build wheel did not run successfully.
-```
+**Wheel build errors (torch, sentencepiece...)**
+- Windows: Install [Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+- Linux: `sudo apt-get install build-essential`
+- Or use `python install_dependencies.py` (handles fallback automatically)
 
-This usually means that some packages require compilation but the necessary build tools are not available. The enhanced install_dependencies.py script will automatically try multiple installation methods:
+### V2
 
-1. First with the `--no-build-isolation` and `--prefer-binary` flags
-2. Then with just the `--prefer-binary` flag
-3. Then installing packages one by one with multiple fallback options:
-   - First with `--prefer-binary`
-   - Then with `--no-deps` and `--prefer-binary`
-   - Special handling for problematic packages like modelscope and sentencepiece
-   - Finally with `--only-binary=:all:` to force using pre-built wheels
+**`API client failed to initialize`**
+- Verify `API_KEY` in your `.env` file
+- Verify `API_PROVIDER` is correct (`openai` / `anthropic` / `gemini`)
 
-If you still encounter issues, try these solutions:
-
-1. **Use the enhanced requirements.txt**: The requirements.txt in this repository has been enhanced to use pre-built wheels where possible:
-   - Added `--index-url` option to use PyPI as the primary package source
-   - Added `--extra-index-url` options for PyTorch's wheel repository
-   - Added `--find-links` and `--extra-index-url` options for modelscope
-   - Added multiple PyTorch wheel sources for torch, sentencepiece, and numpy
-   - Specified exact versions for all packages to ensure compatibility
-
-2. **Install Visual C++ Build Tools** (Windows): Some packages require a C++ compiler. On Windows, you can install the [Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/).
-
-3. **Install build-essential** (Linux/Mac): On Linux/Mac, install the necessary build tools:
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get install build-essential
-
-   # Mac
-   xcode-select --install
-   ```
-
-4. **Use the test_imports.py script**: After installation, run the test script to verify all packages can be imported:
-   ```bash
-   python test_imports.py
-   ```
-
-The install_dependencies.py script will automatically run this test after successful installation.
-
-#### FileNotFoundError During Wheel Building
-
-If you encounter a specific error like:
-
-```
-FileNotFoundError: [WinError 2] The system cannot find the file specified
-```
-
-during wheel building, this typically means that a required executable (like a compiler) couldn't be found. Our enhanced installation process specifically addresses this issue by:
-
-1. Preferring pre-built binary packages over source distributions that require compilation
-2. Using multiple package sources to find compatible pre-built wheels
-3. Providing special handling for known problematic packages
-4. Using the `--only-binary=:all:` flag as a last resort to force using pre-built wheels
-
-If you still encounter this error, make sure you have the necessary build tools installed as described above.
-
-#### ModuleNotFoundError
-
-If you see errors like `ModuleNotFoundError: No module named 'flask'`, it means some dependencies are missing. Use the install_dependencies.py script:
-
+**`ModuleNotFoundError: No module named 'openai'`**
 ```bash
-python install_dependencies.py
+pip install -r requirements.txt
 ```
 
-#### Authentication Errors
-
-If you encounter errors related to authentication when installing packages, such as:
-
-```
-User for huggingface.co: ERROR: Exception:
-...
-EOFError: EOF when reading a line
+**Web server won't start**
+```bash
+python -c "from code_evaluator.web import create_app; print('OK')"
+python run_web.py
 ```
 
-This happens when pip tries to prompt for authentication credentials in a non-interactive environment. Our enhanced installation process addresses this issue by:
-
-1. Using the `--no-input` flag with pip to prevent it from prompting for authentication
-2. Using alternative package sources that don't require authentication
-3. Configuring requirements.txt to use public repositories instead of authenticated ones
-
-If you still encounter authentication issues, you can:
-
-1. **Use the enhanced requirements.txt**: We've updated the requirements.txt file to use PyPI and PyTorch's public repositories instead of repositories that require authentication.
-
-2. **Add the `--no-input` flag manually**: If you're installing packages manually, add the `--no-input` flag to your pip command:
-   ```bash
-   pip install --no-input -r requirements.txt
-   ```
-
-3. **Set up authentication beforehand**: If you need to use repositories that require authentication, set up your credentials before running the installation:
-   ```bash
-   pip config set global.index-url https://pypi.org/simple
-   ```
-
-### Runtime Issues
-
-#### Syntax Checking Errors
-
-If you encounter errors related to syntax checking, ensure the appropriate tools are installed for the languages you want to analyze:
-
-- **C++**: 
-  - **Windows**: Install MinGW or MSYS2 to get g++
-  - **Linux**: `sudo apt-get install g++`
-  - **Mac**: Install Xcode command line tools
-
-- **Python**:
-  - Install pylint: `pip install pylint`
-
-- **JavaScript**:
-  - Install Node.js and ESLint: `npm install -g eslint`
-
-- **Java**:
-  - Install JDK which includes javac
-
-- **C#**:
-  - Install .NET SDK which includes the C# compiler
+**Results fail to parse as JSON**
+- Switch to a larger model (e.g., `gpt-4o` instead of `gpt-4o-mini`)
+- The parser automatically falls back to regex if JSON is invalid
 
 ## License
 

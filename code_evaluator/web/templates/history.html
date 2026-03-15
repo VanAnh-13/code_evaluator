@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Code Analyzer - History{% endblock %}
+
+{% block content %}
+<div class="history-page">
+    <div class="page-header">
+        <h2><i class="fas fa-clock-rotate-left"></i> Analysis History</h2>
+        {% if files %}
+        <form action="{{ url_for('main.clear_history') }}" method="post"
+              onsubmit="return confirm('Clear all history? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <button type="submit" class="btn btn-danger btn-sm">
+                <i class="fas fa-trash"></i> Clear All
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if files %}
+    <div class="history-table-wrapper">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>File</th>
+                    <th>Language</th>
+                    <th>Score</th>
+                    <th>Issues</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files|sort(attribute='timestamp', reverse=True) %}
+                <tr>
+                    <td class="file-name-cell">
+                        <i class="fas fa-file-code"></i>
+                        {{ file.original_name }}
+                    </td>
+                    <td>
+                        {% if file.results %}
+                        <span class="language-tag small">{{ file.results.language|default('-') }}</span>
+                        {% else %}
+                        <span>-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if file.results and file.results.overall_score is defined %}
+                        <span class="score-badge {% if file.results.overall_score >= 80 %}score-good{% elif file.results.overall_score >= 60 %}score-ok{% else %}score-bad{% endif %}">
+                            {{ file.results.overall_score }}/100
+                        </span>
+                        {% else %}
+                        <span>-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if file.results %}
+                            {% set total = (file.results.syntax_errors|default([])|length) + (file.results.bugs|default([])|length) + (file.results.memory_issues|default([])|length) + (file.results.security_vulnerabilities|default([])|length) + (file.results.performance_issues|default([])|length) + (file.results.style_issues|default([])|length) %}
+                            {{ total }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td class="date-cell">{{ file.timestamp|replace('T', ' ')|truncate(19, True, '') }}</td>
+                    <td>
+                        <a href="{{ url_for('main.analyze', file_id=file.id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-clock-rotate-left"></i>
+        </div>
+        <h3>No History Yet</h3>
+        <p>Your analyzed files will appear here.</p>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Start Analysis
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

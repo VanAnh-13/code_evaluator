@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Code Analyzer - Analyze Your Code{% endblock %}
+
+{% block content %}
+<div class="analyzer-layout">
+    <!-- Left Panel: Code Editor -->
+    <div class="editor-panel">
+        <div class="panel-header">
+            <h2><i class="fas fa-edit"></i> Source Code</h2>
+            <div class="editor-controls">
+                <select id="language-select" class="select-input">
+                    <option value="auto">Auto-detect</option>
+                    <option value="text/x-csrc">C</option>
+                    <option value="text/x-c++src">C++</option>
+                    <option value="text/x-python">Python</option>
+                    <option value="text/javascript">JavaScript</option>
+                    <option value="text/typescript">TypeScript</option>
+                    <option value="text/x-java">Java</option>
+                    <option value="text/x-go">Go</option>
+                    <option value="text/x-rustsrc">Rust</option>
+                    <option value="text/x-ruby">Ruby</option>
+                    <option value="application/x-httpd-php">PHP</option>
+                    <option value="text/x-swift">Swift</option>
+                    <option value="text/css">CSS</option>
+                    <option value="text/html">HTML</option>
+                </select>
+                <label class="file-upload-btn" title="Upload file">
+                    <i class="fas fa-upload"></i>
+                    <span class="btn-text">Upload</span>
+                    <input type="file" id="file-upload" hidden
+                        accept=".c,.cpp,.cc,.cxx,.h,.hpp,.py,.js,.ts,.html,.css,.java,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala">
+                </label>
+            </div>
+        </div>
+        <div class="editor-wrapper">
+            <div id="code-editor"></div>
+            <div id="drop-overlay" class="drop-overlay">
+                <div class="drop-message">
+                    <i class="fas fa-cloud-arrow-up"></i>
+                    <p>Drop your file here</p>
+                </div>
+            </div>
+        </div>
+        <div class="editor-footer">
+            <div class="editor-info">
+                <span id="line-count">Lines: 0</span>
+                <span id="char-count">Chars: 0</span>
+                <span id="detected-lang">Language: -</span>
+            </div>
+            <input type="hidden" name="csrf_token" id="csrf-token" value="{{ csrf_token() }}"/>
+            <div class="editor-actions">
+                <label class="agent-toggle" title="Enable AI Agent mode (multi-step reasoning)">
+                    <input type="checkbox" id="agent-mode-toggle">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label"><i class="fas fa-robot"></i> Agent</span>
+                </label>
+                <button id="analyze-btn" class="btn btn-primary" disabled>
+                    <i class="fas fa-magnifying-glass-chart"></i>
+                    <span>Analyze Code</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel: Results -->
+    <div class="results-panel" id="results-panel">
+        <div class="panel-header">
+            <h2><i class="fas fa-clipboard-check"></i> Analysis Results</h2>
+            <div class="result-actions" id="result-actions" style="display:none;">
+                <button class="icon-button" id="export-json-btn" title="Export JSON">
+                    <i class="fas fa-file-code"></i>
+                </button>
+                <button class="icon-button" id="export-md-btn" title="Export Markdown">
+                    <i class="fas fa-file-lines"></i>
+                </button>
+            </div>
+        </div>
+        <div class="results-content" id="results-content">
+            <!-- Empty state -->
+            <div class="empty-state" id="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <h3>Ready to Analyze</h3>
+                <p>Paste your code in the editor or upload a file, then click <strong>Analyze Code</strong> to get started.</p>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <i class="fas fa-bug"></i>
+                        <span>Bug Detection</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-memory"></i>
+                        <span>Memory Issues</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>Security Vulnerabilities</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-gauge-high"></i>
+                        <span>Performance</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-paintbrush"></i>
+                        <span>Code Style</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>Fix Suggestions</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-robot"></i>
+                        <span>AI Agent Mode</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading state -->
+            <div class="loading-state" id="loading-state" style="display:none;">
+                <div class="spinner"></div>
+                <h3>Analyzing your code...</h3>
+                <p>This may take a few seconds depending on code complexity.</p>
+            </div>
+
+            <!-- Agent loading state (shows live steps) -->
+            <div class="agent-loading-state" id="agent-loading-state" style="display:none;">
+                <div class="agent-header">
+                    <div class="spinner-small"></div>
+                    <h3>AI Agent is analyzing...</h3>
+                </div>
+                <div class="agent-steps-timeline" id="agent-steps-timeline"></div>
+            </div>
+
+            <!-- Results will be rendered here by JS -->
+            <div id="analysis-results" style="display:none;"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

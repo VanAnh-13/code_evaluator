@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results - {{ file_info.original_name }}{% endblock %}
+
+{% block content %}
+<div class="results-page">
+    <div class="results-header-bar">
+        <div class="results-header-info">
+            <h2><i class="fas fa-file-code"></i> {{ file_info.original_name }}</h2>
+            <span class="language-tag">{{ results.language }}</span>
+        </div>
+        <div class="results-header-actions">
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+                <i class="fas fa-plus"></i> New Analysis
+            </a>
+        </div>
+    </div>
+
+    {% if "error" in results %}
+    <div class="error-card">
+        <i class="fas fa-circle-exclamation"></i>
+        <h3>Analysis Error</h3>
+        <p>{{ results.error }}</p>
+    </div>
+    {% else %}
+
+    <!-- Score & Summary Row -->
+    <div class="dashboard-row">
+        <div class="score-card">
+            <div class="score-ring" data-score="{{ results.overall_score|default(0) }}">
+                <svg viewBox="0 0 120 120">
+                    <circle class="score-bg" cx="60" cy="60" r="52" />
+                    <circle class="score-fill" cx="60" cy="60" r="52"
+                        stroke-dasharray="326.73"
+                        stroke-dashoffset="{{ 326.73 - (326.73 * (results.overall_score|default(0)) / 100) }}" />
+                </svg>
+                <div class="score-value">{{ results.overall_score|default(0) }}</div>
+            </div>
+            <div class="score-label">Quality Score</div>
+        </div>
+        <div class="summary-card">
+            <h3><i class="fas fa-chart-line"></i> Summary</h3>
+            {% if results.summary %}
+            <p class="summary-text">{{ results.summary }}</p>
+            {% endif %}
+            <div class="issue-counts">
+                {% set total = (results.syntax_errors|default([])|length) + (results.bugs|default([])|length) + (results.memory_issues|default([])|length) + (results.security_vulnerabilities|default([])|length) + (results.performance_issues|default([])|length) + (results.style_issues|default([])|length) %}
+                <div class="count-item">
+                    <span class="count-number">{{ total }}</span>
+                    <span class="count-label">Total Issues</span>
+                </div>
+                <div class="count-item">
+                    <span class="count-number text-danger">{{ (results.bugs|default([])|selectattr('severity', 'equalto', 'critical')|list|length) + (results.memory_issues|default([])|selectattr('severity', 'equalto', 'critical')|list|length) + (results.security_vulnerabilities|default([])|selectattr('severity', 'equalto', 'critical')|list|length) }}</span>
+                    <span class="count-label">Critical</span>
+                </div>
+                <div class="count-item">
+                    <span class="count-number text-warning">{{ (results.bugs|default([])|selectattr('severity', 'equalto', 'high')|list|length) + (results.memory_issues|default([])|selectattr('severity', 'equalto', 'high')|list|length) + (results.security_vulnerabilities|default([])|selectattr('severity', 'equalto', 'high')|list|length) }}</span>
+                    <span class="count-label">High</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue Categories Tabs -->
+    <div class="issues-section">
+        <div class="tabs">
+            <button class="tab active" data-tab="all">
+                All <span class="tab-count">{{ total }}</span>
+            </button>
+            {% if results.syntax_errors %}
+            <button class="tab" data-tab="syntax">
+                <i class="fas fa-triangle-exclamation"></i> Syntax <span class="tab-count">{{ results.syntax_errors|length }}</span>
+            </button>
+            {% endif %}
+            {% if results.bugs %}
+            <button class="tab" data-tab="bugs">
+                <i class="fas fa-bug"></i> Bugs <span class="tab-count">{{ results.bugs|length }}</span>
+            </button>
+            {% endif %}
+            {% if results.memory_issues %}
+            <button class="tab" data-tab="memory">
+                <i class="fas fa-memory"></i> Memory <span class="tab-count">{{ results.memory_issues|length }}</span>
+            </button>
+            {% endif %}
+            {% if results.security_vulnerabilities %}
+            <button class="tab" data-tab="security">
+                <i class="fas fa-shield-halved"></i> Security <span class="tab-count">{{ results.security_vulnerabilities|length }}</span>
+            </button>
+            {% endif %}
+            {% if results.performance_issues %}
+            <button class="tab" data-tab="performance">
+                <i class="fas fa-gauge-high"></i> Performance <span class="tab-count">{{ results.performance_issues|length }}</span>
+            </button>
+            {% endif %}
+            {% if results.style_issues %}
+            <button class="tab" data-tab="style">
+                <i class="fas fa-paintbrush"></i> Style <span class="tab-count">{{ results.style_issues|length }}</span>
+            </button>
+            {% endif %}
+        </div>
+
+        <div class="issues-list" id="issues-list">
+            {% macro render_issues(issues, category_name, category_class) %}
+                {% for issue in issues %}
+                <div class="issue-card {{ category_class }}" data-category="{{ category_class }}">
+                    <div class="issue-card-header">
+                        <div class="issue-meta">
+                            {% if issue.line and issue.line != 0 %}
+                            <span class="issue-line"><i class="fas fa-location-dot"></i> Line {{ issue.line }}</span>
+                            {% endif %}
+                            <span class="severity-badge severity-{{ issue.severity }}">{{ issue.severity }}</span>
+                            <span class="category-badge">{{ category_name }}</span>
+                        </div>
+                    </div>
+                    <p class="issue-desc">{{ issue.description }}</p>
+                    {% if issue.recommendation %}
+                    <div class="issue-rec">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>{{ issue.recommendation }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% endmacro %}
+
+            {{ render_issues(results.syntax_errors|default([]), 'Syntax', 'syntax') }}
+            {{ render_issues(results.bugs|default([]), 'Bug', 'bugs') }}
+            {{ render_issues(results.memory_issues|default([]), 'Memory', 'memory') }}
+            {{ render_issues(results.security_vulnerabilities|default([]), 'Security', 'security') }}
+            {{ render_issues(results.performance_issues|default([]), 'Performance', 'performance') }}
+            {{ render_issues(results.style_issues|default([]), 'Style', 'style') }}
+
+            {% if total == 0 %}
+            <div class="no-issues">
+                <i class="fas fa-circle-check"></i>
+                <h3>No issues found!</h3>
+                <p>Great job! Your code looks good.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Suggested Fixes -->
+    {% if results.suggested_fixes %}
+    <div class="fixes-section">
+        <h3><i class="fas fa-wand-magic-sparkles"></i> Suggested Fixes</h3>
+        {% for line_num, fix in results.suggested_fixes.items() %}
+        <div class="fix-card">
+            <div class="fix-header">
+                <span class="fix-line">Line {{ line_num }}</span>
+            </div>
+            <pre class="fix-code"><code>{{ fix }}</code></pre>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            const category = this.dataset.tab;
+            document.querySelectorAll('.issue-card').forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

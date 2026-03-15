@@ -1,13 +1,20 @@
 """
 Run script for the Code Analyzer web application
 This script starts the web server for analyzing code in multiple programming languages
+
+NOTE: This is a backward-compatible wrapper. The main code is now in code_evaluator/web/
 """
 
 import os
 import sys
+import logging
 import importlib.util
 import platform
 import tempfile
+
+# Add package to path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 
 def check_dependencies():
     """Check if required dependencies are installed"""
@@ -56,11 +63,6 @@ def check_environment():
 if __name__ == "__main__":
     print("[INFO] Starting Code Analyzer web server...")
 
-    # Check if the required directories exist
-    if not os.path.exists(os.path.join(os.path.dirname(__file__), 'web_app')):
-        print("[ERROR] Web application directory not found. Make sure you're running this script from the code_evaluator directory.")
-        sys.exit(1)
-
     # Check for required dependencies
     missing_packages = check_dependencies()
     if missing_packages:
@@ -84,11 +86,16 @@ if __name__ == "__main__":
     print("[INFO] Environment check passed. Starting web server...")
 
     try:
-        # Import Flask app after dependency check
-        from web_app.app import app
+        # Import from new package structure
+        from code_evaluator.web import create_app
+        app = create_app()
 
         # Get port from environment variable or use default
-        port = int(os.environ.get('PORT', 5000))
+        try:
+            port = int(os.environ.get('PORT', 5000))
+        except ValueError:
+            logging.warning(f"Invalid PORT value '{os.environ.get('PORT')}'. Using default port 5000.")
+            port = 5000
 
         # Print startup message
         print(f"[INFO] Starting Code Analyzer web server on http://localhost:{port}")

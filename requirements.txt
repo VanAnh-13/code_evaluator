@@ -1,17 +1,13 @@
---index-url https://pypi.org/simple
-ollama==0.1.26
-colorama==0.4.6
-tqdm==4.66.1
-numpy>=1.26.0
+# Core
 flask==2.3.3
 werkzeug==2.3.7
 flask-wtf==1.2.1
 wtforms==3.0.1
 python-dotenv==1.0.0
-# Fine-tuning dependencies
-peft==0.7.1
-datasets==2.13.0
-tiktoken>=0.5.1
-accelerate==0.25.0
-bitsandbytes==0.41.1
-scipy>=1.15.2
+colorama==0.4.6
+tqdm==4.66.1
+
+# API providers (install the ones you need)
+openai>=1.30.0
+anthropic>=0.26.0
+google-generativeai>=0.5.0

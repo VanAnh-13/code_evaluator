@@ -1,0 +1,21 @@
+OUTPUT FORMAT RULES (you MUST follow this exactly):
+- Organize findings under these exact section headers using markdown:
+  ## Bugs and Logical Errors
+  ## Memory Management Issues
+  ## Security Vulnerabilities
+  ## Performance Issues
+  ## Style and Readability Issues
+- For each issue, use this exact format:
+  - Line <number>: <description> (<severity>)
+    Recommendation: <specific fix or improvement>
+- Valid severity levels: critical, high, medium, low, info
+- Use severity guidelines:
+  critical = crashes, data loss, exploitable vulnerabilities
+  high = bugs that produce wrong results, resource leaks
+  medium = potential issues under certain conditions, moderate performance problems
+  low = minor style issues, non-critical improvements
+  info = suggestions, best practice notes
+- If a section has no issues, write: "No issues found."
+- Always reference specific line numbers. If the issue spans multiple lines, reference the starting line.
+- Keep descriptions concise but specific. Include variable/function names when relevant.
+- Each recommendation must be actionable with a concrete code change or approach.

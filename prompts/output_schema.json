@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["language", "summary", "overall_score", "issues"],
+  "properties": {
+    "language": {
+      "type": "string",
+      "description": "Detected programming language of the code"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Brief overall summary of the code quality (2-3 sentences)"
+    },
+    "overall_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Overall code quality score from 0 (worst) to 100 (best)"
+    },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["line", "category", "severity", "description", "recommendation"],
+        "properties": {
+          "line": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Line number where the issue occurs (0 if general)"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["bug", "memory", "security", "performance", "style"],
+            "description": "Issue category"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low", "info"],
+            "description": "Issue severity level"
+          },
+          "description": {
+            "type": "string",
+            "description": "Clear description of the issue"
+          },
+          "recommendation": {
+            "type": "string",
+            "description": "Actionable recommendation to fix the issue"
+          }
+        }
+      }
+    },
+    "suggested_fixes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["line", "original", "fixed", "explanation"],
+        "properties": {
+          "line": {
+            "type": "integer",
+            "description": "Line number of the fix"
+          },
+          "original": {
+            "type": "string",
+            "description": "Original code snippet"
+          },
+          "fixed": {
+            "type": "string",
+            "description": "Fixed code snippet"
+          },
+          "explanation": {
+            "type": "string",
+            "description": "Brief explanation of the fix"
+          }
+        }
+      }
+    }
+  }
+}
