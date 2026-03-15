@@ -1,4 +1,0 @@
-# file: D:\Homeworks\python\cpp_code_analyzer\code_evaluator\web_app\app.py
-# hypothesis_version: 6.151.9
-
-[413, 500, 1024, 5000, '\nMethod 2:', '.c', '.cc', '.cpp', '.cs', '.css', '.cxx', '.go', '.h', '.hpp', '.html', '.java', '.js', '.kt', '.php', '.py', '.rb', '.rs', '.scala', '.swift', '.ts', '/', '/analyze/<file_id>', '/clear_history', '/history', '/upload', '0.0.0.0', 'ALLOWED_EXTENSIONS', 'File not found', 'History cleared', 'MAX_CONTENT_LENGTH', 'No file found', 'No file part', 'No selected file', 'PORT', 'POST', 'SECRET_KEY', 'UPLOAD_FOLDER', '__main__', 'analysis.html', 'analyze', 'error', 'file', 'files', 'history.html', 'id', 'index', 'index.html', 'original_name', 'path', 'results', 'success', 'timestamp']
