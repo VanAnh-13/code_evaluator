@@ -1,312 +1,266 @@
-# Code Evaluator
+<div align="center">
+  <img src="https://img.icons8.com/m_outlined/100/monitor---v1.png" alt="Code Evaluator Logo" width="100"/>
+  <h1><b>Code Evaluator</b></h1>
+  <p>Multi-language code analysis platform for CLI, Web UI, and API workflows.</p>
 
-Multi-language code analysis platform for CLI, Web UI, and API workflows.
+  <p>
+    <a href="#introduction">Introduction</a> •
+    <a href="#key-features">Key Features</a> •
+    <a href="#overall-architecture">Architecture</a> •
+    <a href="#installation">Installation</a> •
+    <a href="#running-the-project">Get Started</a> •
+    <a href="#env-configuration">Configuration</a> •
+    <a href="#roadmap">Roadmap</a>
+  </p>
 
-`Code Evaluator` analyzes source code for syntax problems, bugs, memory/resource risks, security issues, performance bottlenecks, and maintainability concerns. It supports multiple LLM providers through a unified architecture and returns structured, integration-friendly output.
+  <p>
+    <img alt="License" src="https://img.shields.io/badge/License-MIT-blue.svg" />
+    <img alt="Python version" src="https://img.shields.io/badge/Python-3.8%2B-brightgreen.svg" />
+    <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
+  </p>
+</div>
 
-**✨ New in v1.0:**
-- 🦙 **Ollama Support**: Run analysis with local LLMs (no API key needed!)
-- 🧪 **Comprehensive Test Suite**: Full pytest coverage for quality assurance
-- 🚀 **CI/CD Pipeline**: Automated testing and releases with GitHub Actions
-- 📚 **Enhanced Documentation**: Complete API docs and contributing guidelines
+<br />
 
-## Introduction
+Code Evaluator meticulously analyzes your source code for syntax problems, logic bugs, memory/resource risks, security issues, performance bottlenecks, and maintainability concerns. Built on a unified architecture, it seamlessly supports multiple popular LLM providers—empowering you to receive deep, structured insights and auto-remediation recommendations effortlessly.
 
-This project is designed for developers, reviewers, and teams that want fast static+LLM-assisted insights without setting up heavyweight local model infrastructure.
+---
 
-You can use it in three ways:
-- `CLI`: analyze one or many files and export reports
-- `Web`: interactive editor dashboard and analysis history
-- `API`: JSON endpoint for editor plugins, CI, or external tools
+## 🚀 Introduction
 
-## Key Features
+This project is built for developers, reviewers, and engineering teams seeking **lightning-fast static insights complemented by LLM-assisted deep understanding**. Unlike heavyweight local environments, Code Evaluator provides a lightweight, modular quality gate that you can embed anywhere.
 
-- 🌐 **Multi-language analysis**: C/C++, Python, JavaScript, Java, TypeScript, Go, Rust, and more
-- 🤖 **Multi-provider LLM backend**: OpenAI, Anthropic, Gemini, and **Ollama** (local!)
-- 📊 **Structured JSON output**: Summary, score, categorized issues, and suggested fixes
-- 💻 **Web dashboard**: Interactive editor with analysis history
-- 🔌 **REST API**: `POST /api/analyze` endpoint for programmatic integration
-- 🧠 **Agent mode**: Multi-step AI workflows for complex analysis
-- ⚡ **Performance**: Smart caching and concurrent analysis
-- 📝 **Report export**: Markdown and JSON formats
+You can interface with the platform in three flexible modes:
+- **CLI**: Analyze individual scripts or bulk-evaluate entire repositories, exporting precise multi-format reports.
+- **Web UI**: Navigate an interactive dashboard packed with real-time feedback and analysis history.
+- **REST API**: Harness JSON standard endpoints to build editor plugins, CI/CD integrations, or complex external workflows.
 
-## Use Cases
+> **✨ New in v1.0**
+> 🦙 Run entirely local, privacy-first evaluations with **Ollama** support.
+> 🧪 Complete unit testing infrastructure powered by **Pytest**.
+> 🚀 Automated test iterations and fast track verifications via **GitHub Actions**.
 
-### 1) Local Developer Quality Gate
+---
 
-Run analysis before commit to catch high-risk issues early.
+## ✨ Key Features
 
-```powershell
-python -m code_evaluator.main analyze .\examples\example.cpp -v
-```
+- **🌐 Comprehensive Language Support:** Analyzes over 10 languages including C/C++, Python, JavaScript, Java, TypeScript, Go, and Rust.
+- **🤖 Unified LLM Backend:** Seamless interop with OpenAI, Anthropic, Gemini, and local **Ollama** models.
+- **📊 Standardized JSON Output:** Delivers unified summaries, actionable metrics, category-level insights, and line-by-line suggested fixes.
+- **💻 Modern Web Dashboard:** A sleek, glassmorphic UI providing code editor integration and history tracking.
+- **🔌 Enterprise REST API:** Out-of-the-box `POST /api/analyze` capabilities for direct toolchain integration.
+- **🧠 Advanced Agentic Workflows:** Supports conversational agent sessions for multi-step AI code analysis.
+- **⚡ Built for Speed:** Smart prompt caching, parallel analysis operations, and efficient memory usage.
+- **📝 Exportable Reports:** Instantly generate clean Markdown summaries and structured JSON.
 
-### 2) Team Review Assistant
+---
 
-Use the Web UI to paste snippets during code review and discuss recommendations.
+## 🏛 Overall Architecture
 
-```powershell
-python run_web.py
-```
-
-Then open `http://localhost:5000`.
-
-### 3) CI or Internal Tooling Integration
-
-Send source text directly to the JSON endpoint and parse issue lists in pipelines.
-
-```powershell
-curl -X POST http://localhost:5000/api/analyze `
-  -H "Content-Type: application/json" `
-  -d '{"code":"def f(x):\n    return 10/x","language":"python"}'
-```
-
-### 4) Guided Agent Analysis
-
-Use the agent path for iterative, tool-augmented analysis sessions.
-
-```powershell
-python -m code_evaluator.main agent analyze .\examples\example.py --max-steps 15
-```
-
-### 5) Local LLM with Ollama
-
-Run analysis completely offline with Ollama:
-
-```powershell
-# Start Ollama server (if not running)
-ollama serve
-
-# Analyze with local model
-python -m code_evaluator.main analyze .\examples\example.py --provider ollama --api-model codellama
-```
-
-## Demo
-
-### Quick Demo (Web)
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-python run_web.py
-```
-
-1. Open `http://localhost:5000`
-2. Paste code from `examples/example.py`
-3. Click **Analyze**
-4. Review score, issue categories, and suggested fixes
-
-### Quick Demo (CLI + Export)
-
-```powershell
-python -m code_evaluator.main analyze .\examples\example.js --output .\results --report .\reports -v
-```
-
-Expected artifacts:
-- JSON analysis in `results/`
-- Markdown report in `reports/`
-
-## Overall Architecture
+Code Evaluator uses a pluggable client-service methodology separating UI, Core logic, and the Provider Network. 
 
 ```mermaid
 flowchart LR
-    U[User: CLI / Web / API] --> A[CodeAnalyzer]
-    A --> S[Syntax Checker]
-    A --> M[ModelLoader]
-    M --> C1[OpenAI Client]
-    M --> C2[Anthropic Client]
-    M --> C3[Gemini Client]
-    A --> P[Parser]
-    P --> R[Structured Result]
-    R --> W[Web Response / CLI Report / API JSON]
+    subgraph Interfaces
+        C([CLI])
+        W([Web UI])
+        API([REST API])
+    end
+
+    subgraph Core
+        CA[CodeAnalyzer]
+        SC[Syntax Checker]
+        P[Parser & Formatter]
+    end
+
+    subgraph LLM Layer
+        ML[Model Loader]
+        O[OpenAI]
+        A[Anthropic]
+        G[Gemini]
+        OL[Ollama Local]
+    end
+
+    Interfaces --> CA
+    CA --> SC
+    CA <--> P
+    CA --> ML
+    ML -.-> O & A & G & OL
+    
+    style Interfaces fill:#111827,stroke:#3b82f6,color:#f3f4f6
+    style Core fill:#1f2937,stroke:#10b981,color:#f3f4f6
+    style LLM Layer fill:#111827,stroke:#a855f7,color:#f3f4f6
 ```
+
+### Analysis Pipeline
 
 ```mermaid
 sequenceDiagram
-    participant UI as Web UI
-    participant API as /api/analyze
-    participant AN as CodeAnalyzer
-    participant LLM as Provider API
+    participant UI as Web/CLI/API
+    participant Core as CodeAnalyzer
+    participant LLM as Provider Model
 
-    UI->>API: POST {code, language}
-    API->>AN: analyze_code(code, language)
-    AN->>LLM: messages + schema constraints
-    LLM-->>AN: response
-    AN-->>API: parsed issues + score + summary
-    API-->>UI: JSON result
+    UI->>Core: Request (code + language)
+    activate Core
+    Core->>Core: Pre-process & Validate Syntax
+    Core->>LLM: Send structured system prompt + code snippet
+    activate LLM
+    LLM-->>Core: JSON Analysis Response
+    deactivate LLM
+    Core->>Core: Parse, Score & Structure fixes
+    Core-->>UI: Return formal Result Object
+    deactivate Core
 ```
 
-## Installation
+---
+
+## 📦 Installation
 
 ### Prerequisites
+- **Python 3.8+**
+- Git bash or Windows PowerShell
+- Required API keys (unless solely relying on local Ollama integration)
 
-- Python 3.8+
-- `pip`
-- At least one provider API key
-
-### Install (PowerShell)
+### Local Environment Setup
 
 ```powershell
+# 1. Clone the repository
 git clone https://github.com/VanAnh-13/code_evaluator.git
 cd code_evaluator
+
+# 2. Initialize and activate a virtual environment
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1   # Windows
+# source .venv/bin/activate    # Linux/Mac
+
+# 3. Install packages
 pip install -r requirements.txt
 ```
 
-### Optional: Docker
+### 🐳 Optional: Docker Compose
 
-```powershell
+For completely isolated execution without environment interference:
+
+```bash
 docker build -t code-evaluator .
 docker run -p 5000:5000 -e API_PROVIDER=openai -e API_KEY=your_key code-evaluator
 ```
 
-## Running the Project
+---
 
-### Web App
+## 🛠 Running the project
 
+### 1. Web Dashboard (Interactive Mode)
+The easiest way to review code drops dynamically.
 ```powershell
 python run_web.py
 ```
+> Open [http://localhost:5000](http://localhost:5000) to view the Web UI.
 
-### CLI Analyze
-
+### 2. CLI: Instant File Analysis
+Analyze complex directories or solitary critical files right from your build script.
 ```powershell
+# Quick evaluation
 python -m code_evaluator.main analyze .\examples\example.cpp
-python -m code_evaluator.main analyze .\examples\example.py --report .\reports
+
+# Output verbose reports into separate directories
+python -m code_evaluator.main analyze .\examples\example.py --report .\reports -v
 ```
 
-### CLI Agent Modes
-
+### 3. Agent & Chat Modes
+Launch an interactive loop for deep codebase comprehension.
 ```powershell
 python -m code_evaluator.main agent chat
-python -m code_evaluator.main agent analyze .\examples\example.py
 python -m code_evaluator.main agent project .\code_evaluator
 ```
 
-### Web/API Service Entry
-
+### 4. Headless REST API
+Expose the analyzer as an internal backend service.
 ```powershell
 python -m code_evaluator.main serve --host 0.0.0.0 --port 5000
 ```
 
-## Env Configuration
+---
 
-Create local env file:
+## ⚙️ Env Configuration
 
+Code Evaluator uses secure environment variables to manage provider configurations.
+
+Create your `.env` configuration file:
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Example values:
-
-```dotenv
-API_PROVIDER=openai
-API_KEY=sk-your-api-key
-API_MODEL=
-API_TEMPERATURE=0.1
-API_MAX_TOKENS=4096
-API_TIMEOUT=120
-# API_BASE_URL=
-# SECRET_KEY=change-me
-```
-
-Environment variables used by current code paths (`code_evaluator/model/config.py`, `code_evaluator/web/app.py`):
+Open `.env` and fill in necessary keys. Here's a sample map to get you started:
 
 | Variable | Purpose | Default |
 |---|---|---|
-| `API_PROVIDER` | LLM provider: `openai`, `anthropic`, `gemini`, `ollama` | `openai` |
-| `API_KEY` | Provider API key (not needed for `ollama`) | empty |
-| `API_MODEL` | Optional model override | provider-specific |
-| `API_TEMPERATURE` | Generation temperature | `0.3` |
-| `API_MAX_TOKENS` | Max output tokens | `4096` |
-| `API_BASE_URL` | Custom endpoint/proxy (for Ollama: `http://localhost:11434`) | unset |
-| `API_TIMEOUT` | Request timeout (seconds) | `120` |
-| `SECRET_KEY` | Flask secret key | auto-generated |
-| `PORT` | Web server port | `5000` |
+| `API_PROVIDER` | Defines the LLM provider (`openai`, `anthropic`, `gemini`, `ollama`) | `openai` |
+| `API_KEY` | Provider secret key (omit if using `ollama`) | `""` |
+| `API_MODEL` | Explicitly override target engine representation | *provider-specific* |
+| `API_TEMPERATURE` | Float configuration for determinism | `0.3` |
+| `API_MAX_TOKENS` | Maximum limit on response string limits | `4096` |
+| `API_BASE_URL` | Override the proxy/base root (e.g. `http://localhost:11434` for Ollama) | `unset` |
+| `API_TIMEOUT` | Default request limits to prevent hanging | `120` |
+| `PORT` | Flask internal routing port | `5000` |
 
-## Folder Structure
+---
+
+## 📂 Folder Structure
+
+Maintaining structure limits abstraction fatigue. Find your way quickly through standard architecture mappings:
 
 ```text
 code_evaluator/
-|- code_evaluator/
-|  |- agent/          # ReAct executor, tools, sessions
-|  |- analyzer/       # Code analysis orchestration and parsing
-|  |- model/          # Provider configs/clients/factory/loader
-|  |- report/         # JSON + Markdown exporters/generators
-|  |- utils/          # cache, file utils, security helpers
-|  |- web/            # Flask app factory, routes, templates, static assets
-|  '- main.py         # CLI entry point
-|- prompts/           # system prompts and output schema
-|- examples/          # sample source files for quick tests
-|- run_web.py         # web startup wrapper
-|- requirements.txt
-'- README.md
+├── code_evaluator/
+│   ├── agent/          # Multi-step conversational ReAct executors
+│   ├── analyzer/       # Core static parser operations and AST mappings
+│   ├── model/          # Interop classes (OpenAI, Anthropic, Gemini, Ollama)
+│   ├── report/         # File generators (Markdown compilation, JSON extraction)
+│   ├── utils/          # Standard operations (cache handlers, security formatting)
+│   └── web/            # Flask Web App, REST Routes, Static CSS/JS, Jinja HTML
+├── docs/               # Advanced documentation references
+├── examples/           # Mock scripts to test evaluators quickly
+├── tests/              # Pytest assertions & workflow coverage logic
+└── run_web.py          # Primary entry wrapper for the web UI
 ```
 
-## Contribution Guidelines
+---
 
-We welcome contributions of all sizes.
+## 🤝 Contribution Guidelines
 
-1. Fork and create a feature branch from `main`
-2. Keep changes scoped and include tests when behavior changes
-3. Run relevant checks locally before opening a PR
-4. Add/adjust documentation for user-facing updates
-5. Open a PR with clear context, expected behavior, and sample output
+We love seeing the open-source community expand our analyzers. If you wish to contribute, please follow our flow:
 
-Suggested local sanity commands:
+1. **Fork** the repository and create your feature logic branch: `git checkout -b feature/amazing-feature`.
+2. **Develop** your code. Ensure formatting remains intact.
+3. **Validate** via our test-suite locally:
+   ```powershell
+   pytest --cov=code_evaluator
+   flake8 code_evaluator tests
+   ```
+4. **Commit** with semantic messages (`feat: improve C++ memory parsing`).
+5. **Push** to the branch and open a **Pull Request**.
 
-```powershell
-# Run tests
-pytest
+For more specifics on design practices, check [CONTRIBUTING.md](CONTRIBUTING.md).
 
-# Run with coverage
-pytest --cov=code_evaluator --cov-report=html
+---
 
-# Run linting
-black code_evaluator tests --check
-flake8 code_evaluator tests
+## 🗺 Roadmap
 
-# Test CLI
-python -m code_evaluator.main analyze .\examples\example.cpp
-```
+Our goal is continuous innovation.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines.
+- ⏳ **Q2 2026:** Out-of-the-box CI/CD GitHub Action package published to the Marketplace.
+- ⏳ **Q2 2026:** Agent streaming enhancements on the frontend for real-time visualization.
+- ⏳ **Q3 2026:** Custom Rule Profiles: Opt into strict-modes (e.g., Security Only vs Speed Focus).
+- ⏳ **Q3 2026:** Historical Diffing feature allowing trend visualization across pipeline iterations.
+- ⏳ **Q4 2026:** Expanded provider telemetry (Latency graphs, Retry statistics).
 
-## License
+---
 
-This project is distributed under the MIT License.
+## 📄 License
 
-## Roadmap
+Code Evaluator is proudly an open source endeavor. Distributed under the **MIT License**. See `LICENSE` for more information.
 
-Planned direction (proposal aligned with current modules):
-
-- [ ] **Q2 2026**: add first-class CI pipeline docs and reproducible quality gates
-- [ ] **Q2 2026**: improve agent streaming UX and step visualization in web UI
-- [ ] **Q3 2026**: add configurable rule profiles (security-first, performance-first, style-first)
-- [ ] **Q3 2026**: introduce baseline diff mode (compare current analysis vs previous run)
-- [ ] **Q4 2026**: expand provider observability (latency, retries, provider fallback telemetry)
-- [ ] **Q4 2026**: package release hardening (versioned changelog + release automation)
-
-## Additional Documentation
-
-- **[API Documentation](docs/API.md)** - Complete REST API and Python API reference
-- **[Contributing Guide](CONTRIBUTING.md)** - Development setup and guidelines
-- **[GitHub Actions](.github/workflows/)** - CI/CD pipeline configuration
-
-## Recent Updates
-
-**v1.0.0** (2025)
-- ✨ Added Ollama client for local LLM inference
-- ✅ Comprehensive test suite with pytest
-- 🚀 GitHub Actions CI/CD pipeline
-- 📚 Complete API documentation
-- 🧹 Removed legacy code and cleaned up repository
-- 🔧 Development tooling (black, flake8, isort, pre-commit hooks)
-
-## Performance Notes
-
-- **Caching**: Analysis results are cached to avoid redundant API calls
-- **Parallel Analysis**: Multiple files analyzed concurrently when possible
-- **Local Ollama**: Zero API costs, complete privacy, offline capability
+<div align="center">
+  <sub>Built with ❤️ for better, safer code.</sub>
+</div>
